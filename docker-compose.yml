@@ -1,0 +1,36 @@
+version: '3.1'
+
+services:
+    # nodered:
+    #   image: nodered/node-red:latest
+    #   environment:
+    #     - TZ=Asia/Kolkata
+    #   ports:
+    #     - "1880:1880"
+    #     - "80:80"
+    #   volumes:
+    #     - /data/nodered:/data
+    #   links:
+    #       - "mosquitto"
+    mosquitto:
+      image: eclipse-mosquitto
+      ports:
+          - "1883:1883"
+      volumes:
+          - ./mosquitto:/mosquitto
+      stdin_open: true
+      tty:  true
+      container_name: mosquitto_broker
+    luminapi:
+      build: .
+      volumes:
+        - .:/root/go/src/app
+      ports:
+        - 80:8080
+      stdin_open: true
+      tty:  true
+      links:
+        - "mosquitto"
+      container_name: luminapi_go
+      entrypoint: ["go", "run", "."]
+
