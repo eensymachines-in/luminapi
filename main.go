@@ -1,59 +1,41 @@
 package main
 
 import (
-	"fmt"
-	"time"
+	"net/http"
 
-	mqtt "github.com/eclipse/paho.mqtt.golang"
+	"github.com/gin-gonic/gin"
+	log "github.com/sirupsen/logrus"
 )
 
-func publish(client mqtt.Client) {
-	num := 10
-	for i := 0; i < num; i++ {
-		text := fmt.Sprintf("Message %d", i)
-		token := client.Publish("topic/test", 0, false, text)
-		token.Wait()
-		time.Sleep(time.Second)
+// CORS : this allows all cross origin requests
+func CORS(c *gin.Context) {
+	// First, we add the headers with need to enable CORS
+	// Make sure to adjust these headers to your needs
+	c.Header("Access-Control-Allow-Origin", "*")
+	c.Header("Access-Control-Allow-Methods", "*")
+	c.Header("Access-Control-Allow-Headers", "*")
+	c.Header("Content-Type", "application/json")
+	// Second, we handle the OPTIONS problem
+	if c.Request.Method != "OPTIONS" {
+		c.Next()
+	} else {
+		// Everytime we receive an OPTIONS request,
+		// we just return an HTTP 200 Status Code
+		// Like this, Angular can now do the real
+		// request using any other method than OPTIONS
+		c.AbortWithStatus(http.StatusOK)
 	}
 }
-
-func sub(client mqtt.Client) {
-	topic := "topic/test"
-	token := client.Subscribe(topic, 1, nil)
-	token.Wait()
-	fmt.Printf("Subscribed to topic: %s", topic)
-}
-
-var messagePubHandler mqtt.MessageHandler = func(client mqtt.Client, msg mqtt.Message) {
-	fmt.Printf("Received message: %s from topic: %s\n", msg.Payload(), msg.Topic())
-}
-
-var connectHandler mqtt.OnConnectHandler = func(client mqtt.Client) {
-	fmt.Println("Connected")
-}
-
-var connectLostHandler mqtt.ConnectionLostHandler = func(client mqtt.Client, err error) {
-	fmt.Printf("Connect lost: %v", err)
-}
-
 func main() {
-	var broker = "mosquitto"
-	var port = 1883
-	opts := mqtt.NewClientOptions()
-	opts.AddBroker(fmt.Sprintf("tcp://%s:%d", broker, port))
-	opts.SetClientID("mqtt_luminapi")
-	// http://www.steves-internet-guide.com/mqtt-username-password-example/
-	opts.SetUsername("eensy")
-	opts.SetPassword("10645641993")
-	opts.SetDefaultPublishHandler(messagePubHandler)
-	opts.OnConnect = connectHandler
-	opts.OnConnectionLost = connectLostHandler
-	client := mqtt.NewClient(opts)
-	if token := client.Connect(); token.Wait() && token.Error() != nil {
-		panic(token.Error())
-	}
-	sub(client)
-	publish(client)
 
-	client.Disconnect(250)
+	gin.SetMode(gin.ReleaseMode)
+	r := gin.Default()
+	r.Use(CORS)
+	r.GET("/ping", func(c *gin.Context) {
+		c.JSON(200, gin.H{
+			"message": "hi from inside luminapi",
+		})
+	})
+	log.Info("Starting luminapi service ..")
+	log.Fatal(r.Run(":8080"))
 }
