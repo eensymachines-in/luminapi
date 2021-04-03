@@ -21,6 +21,13 @@ services:
       stdin_open: true
       tty:  true
       container_name: mosquitto_broker
+    srvmongo:
+      image: mongo:4.2-bionic
+      ports:
+          - 37017:27017
+      tty: true
+      stdin_open: true
+      container_name: authapi_mongo
     luminapi:
       build: .
       volumes:
@@ -31,6 +38,7 @@ services:
       tty:  true
       links:
         - "mosquitto"
+        - "srvmongo"
       container_name: luminapi_go
       entrypoint: ["go", "run", "."]
 
