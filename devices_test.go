@@ -85,4 +85,15 @@ func TestDevices(t *testing.T) {
 	resp, err = (&http.Client{}).Do(MakeNewDevicePOSTReq("random4w42", []string{}))
 	assert.Nil(t, err, "Unexpected error making a get request")
 	assert.Equal(t, 400, resp.StatusCode, "Unexpected status code in http response")
+
+	// Now here we are trying to remove a device registration
+	req, _ = http.NewRequest("DELETE", fmt.Sprintf("%s/%s", bUrl, serial), nil)
+	resp, err = (&http.Client{}).Do(req)
+	assert.Nil(t, err, "Unexpected error making a get request")
+	assert.Equal(t, 200, resp.StatusCode, "Unexpected status code in http response")
+
+	// Then trying again to delete the same serial device will fail
+	resp, err = (&http.Client{}).Do(req)
+	assert.Nil(t, err, "Unexpected error making a get request")
+	assert.Equal(t, 404, resp.StatusCode, "Unexpected status code in http response")
 }

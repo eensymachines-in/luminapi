@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"net/http"
 	"time"
 
@@ -98,6 +99,37 @@ func HandlDevices(c *gin.Context) {
 		return
 	}
 }
+func HandlDevice(c *gin.Context) {
+	val, exists := c.Get("devreg")
+	if !exists {
+		errx.DigestErr(errx.NewErr(errx.ErrConnFailed{}, nil, "failed connection to database", "HandlDevices/dbConnect"), c)
+		return
+	}
+	devreg, _ := val.(*core.DevRegsColl)
+	val, _ = c.Get("db_close")
+	dbClose := val.(func())
+	defer dbClose()
+	serial := c.Param("serial")
+	yes, err := devreg.IsRegistered(serial)
+	if errx.DigestErr(err, c) != 0 {
+		return
+	}
+	if !yes {
+		// the device you are looking for is not registered
+		errx.DigestErr(errx.NewErr(&errx.ErrNotFound{},
+			fmt.Errorf("no device with serial %s", serial),
+			"Device you are looking for is not registered",
+			"HandlDevice/IsRegistered"), c)
+		return
+	}
+	if c.Request.Method == "DELETE" {
+		if errx.DigestErr(devreg.UnRegister(serial), c) != 0 {
+			return
+		}
+		c.JSON(http.StatusOK, gin.H{})
+		return
+	}
+}
 func main() {
 
 	gin.SetMode(gin.ReleaseMode)
@@ -110,7 +142,8 @@ func main() {
 	})
 	devices := r.Group("/devices")
 	devices.Use(dbConnect())
-	devices.POST("/", HandlDevices) // to register new devices
+	devices.POST("/", HandlDevices)         // to register new devices
+	devices.DELETE("/:serial", HandlDevice) // single device un-register
 	log.Info("Starting luminapi service ..")
 	log.Fatal(r.Run(":8080"))
 }
