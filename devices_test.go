@@ -52,6 +52,7 @@ func TestDevices(t *testing.T) {
 	// test data
 	serial := "bb310d8176a2"
 	relays := []string{"IN1", "IN2", "IN3", "IN4"}
+
 	// The actual request
 	resp, err := (&http.Client{}).Do(MakeNewDevicePOSTReq(serial, relays))
 	// testing
@@ -73,4 +74,15 @@ func TestDevices(t *testing.T) {
 	assert.Nil(t, err, "Unexpected error making a get request")
 	assert.Equal(t, 400, resp.StatusCode, "Unexpected status code in http response")
 
+	// Now sending a rotten payload - check to see if the api can reject that with appropriate code
+	t.Log("Now trying to register a device with invalid serial number")
+	resp, err = (&http.Client{}).Do(MakeNewDevicePOSTReq("", relays))
+	assert.Nil(t, err, "Unexpected error making a get request")
+	assert.Equal(t, 400, resp.StatusCode, "Unexpected status code in http response")
+
+	t.Log("Now trying to register a device with empty relay ids")
+	// Please see : here we cannot use the same serial number, since that is registered and woudl return 200 OK without checking to see if the relays invliad
+	resp, err = (&http.Client{}).Do(MakeNewDevicePOSTReq("random4w42", []string{}))
+	assert.Nil(t, err, "Unexpected error making a get request")
+	assert.Equal(t, 400, resp.StatusCode, "Unexpected status code in http response")
 }
