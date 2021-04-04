@@ -12,12 +12,6 @@ import (
 /* The device registers itself via the authapi microservice, and then proceeds itself to register here on luminapi
 Here all that is required is the device UID and the schedules underneath it */
 
-// DevReg : represents one device registration in the database
-type DevReg struct {
-	Serial    string                       `json:"serial" bson:"serial"` // unique serial number of the device
-	Schedules []*scheduling.JSONRelayState `json:"schedules" bson:"schedules"`
-}
-
 // DevRegsColl : extension of the mgo collection - make this object and call the functions on it
 type DevRegsColl struct {
 	*mgo.Collection
@@ -55,6 +49,10 @@ func (drc *DevRegsColl) IsRegistered(serial string) (bool, error) {
 // Register : registers a new device and sends back the default schedule
 // error in case the register was unsuccessful
 func (drc *DevRegsColl) Register(serial string, rlyIDS []string, result *DevReg) error {
+	if serial == "" || len(rlyIDS) == 0 {
+		// simple error check - 400 bad request
+		return errx.NewErr(errx.ErrInvalid{}, nil, "Serial of devices is invalid, or there arent enough relay definitions", "DevRegsColl")
+	}
 	// When the server sets it would add the defaul timing to the relay ids the client tells it to
 	// When defaulting the server will not add any patch schedules
 	*result = DevReg{Serial: serial, Schedules: []*scheduling.JSONRelayState{
