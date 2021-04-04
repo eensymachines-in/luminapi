@@ -21,14 +21,14 @@ type DevRegsColl struct {
 func (drc *DevRegsColl) GetSchedules(serial string, result *[]*scheduling.JSONRelayState) error {
 	yes, err := drc.IsRegistered(serial)
 	if err != nil {
-		return errx.NewErr(errx.ErrQuery{}, err, "Failed to check if the device is registered", "DevRegsColl/GetSchedules/IsRegistered")
+		return errx.NewErr(&errx.ErrQuery{}, err, "Failed to check if the device is registered", "DevRegsColl/GetSchedules/IsRegistered")
 	}
 	if !yes {
-		return errx.NewErr(errx.ErrNotFound{}, err, "No schedules for unregistered devices", "DevRegsColl/GetSchedules")
+		return errx.NewErr(&errx.ErrNotFound{}, err, "No schedules for unregistered devices", "DevRegsColl/GetSchedules")
 	}
 	reg := &DevReg{}
 	if drc.Find(bson.M{"serial": serial}).One(reg) != nil {
-		return errx.NewErr(errx.ErrQuery{}, err, "Failed operation to get device schedules", "DevRegsColl/GetSchedules/One")
+		return errx.NewErr(&errx.ErrQuery{}, err, "Failed operation to get device schedules", "DevRegsColl/GetSchedules/One")
 	}
 	*result = reg.Schedules
 	return nil
@@ -38,7 +38,7 @@ func (drc *DevRegsColl) GetSchedules(serial string, result *[]*scheduling.JSONRe
 func (drc *DevRegsColl) IsRegistered(serial string) (bool, error) {
 	count, err := drc.Find(bson.M{"serial": serial}).Count()
 	if err != nil {
-		return false, errx.NewErr(errx.ErrQuery{}, err, "Failed to check if the device is registered", "DevRegsColl/IsRegistered")
+		return false, errx.NewErr(&errx.ErrQuery{}, err, "Failed to check if the device is registered", "DevRegsColl/IsRegistered")
 	}
 	if count > 0 {
 		return true, nil
@@ -51,7 +51,7 @@ func (drc *DevRegsColl) IsRegistered(serial string) (bool, error) {
 func (drc *DevRegsColl) Register(serial string, rlyIDS []string, result *DevReg) error {
 	if serial == "" || len(rlyIDS) == 0 {
 		// simple error check - 400 bad request
-		return errx.NewErr(errx.ErrInvalid{}, nil, "Serial of devices is invalid, or there arent enough relay definitions", "DevRegsColl")
+		return errx.NewErr(&errx.ErrInvalid{}, nil, "Serial of devices is invalid, or there arent enough relay definitions", "DevRegsColl")
 	}
 	// When the server sets it would add the defaul timing to the relay ids the client tells it to
 	// When defaulting the server will not add any patch schedules
@@ -60,7 +60,7 @@ func (drc *DevRegsColl) Register(serial string, rlyIDS []string, result *DevReg)
 	}}
 	// default schedule gets pushed to the collection
 	if err := drc.Insert(result); err != nil {
-		return errx.NewErr(errx.ErrQuery{}, err, "Failed operation to add device registration", "DevRegsColl/Register")
+		return errx.NewErr(&errx.ErrQuery{}, err, "Failed operation to add device registration", "DevRegsColl/Register")
 	}
 	return nil
 }
@@ -68,7 +68,7 @@ func (drc *DevRegsColl) Register(serial string, rlyIDS []string, result *DevReg)
 // UnRegister : this shall remove the device's entry from the database with all its schedules
 func (drc *DevRegsColl) UnRegister(serial string) error {
 	if err := drc.Remove(bson.M{"serial": serial}); err != nil {
-		return errx.NewErr(errx.ErrQuery{}, err, "Failed operation to unregister device", "DevRegsColl/UnRegister")
+		return errx.NewErr(&errx.ErrQuery{}, err, "Failed operation to unregister device", "DevRegsColl/UnRegister")
 	}
 	return nil
 }
@@ -82,10 +82,10 @@ func (drc *DevRegsColl) UpdateSchedules(serial string, newScheds []*scheduling.J
 		return err
 	}
 	if !yes {
-		return errx.NewErr(errx.ErrNotFound{}, err, fmt.Sprintf("Failed to update schedule, since device %s is not registered", serial), "DevRegsColl/UpdateSchedules")
+		return errx.NewErr(&errx.ErrNotFound{}, err, fmt.Sprintf("Failed to update schedule, since device %s is not registered", serial), "DevRegsColl/UpdateSchedules")
 	}
 	if err := drc.Update(bson.M{"serial": serial}, bson.M{"$set": bson.M{"schedules": newScheds}}); err != nil {
-		return errx.NewErr(errx.ErrQuery{}, err, "Failed operation to update device schedules", "DevRegsColl/UpdateSchedules")
+		return errx.NewErr(&errx.ErrQuery{}, err, "Failed operation to update device schedules", "DevRegsColl/UpdateSchedules")
 	}
 	return nil
 }

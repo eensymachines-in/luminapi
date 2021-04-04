@@ -72,9 +72,12 @@ func HandlDevices(c *gin.Context) {
 		// else shall register and then send ok
 		payload := &core.DevRegHttpPayload{}
 		if c.ShouldBindJSON(payload) != nil {
-			errx.DigestErr(errx.NewErr(errx.ErrJSONBind{}, nil, "failed to read the device registration", "HandlDevices/ShouldBindJSON"), c)
+			errx.DigestErr(errx.NewErr(&errx.ErrJSONBind{}, nil, "failed to read the device registration", "HandlDevices/ShouldBindJSON"), c)
 			return
 		}
+		log.WithFields(log.Fields{
+			"payload": payload,
+		}).Info("Received payload")
 		yes, err := devreg.IsRegistered(payload.Serial)
 		if errx.DigestErr(err, c) != 0 {
 			return
@@ -92,6 +95,7 @@ func HandlDevices(c *gin.Context) {
 		}
 		// when device registers itself newly the response also has schedules
 		c.JSON(http.StatusOK, registration.Schedules)
+		return
 	}
 }
 func main() {

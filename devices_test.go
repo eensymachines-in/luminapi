@@ -12,6 +12,10 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+const (
+	bUrl = "http://localhost/devices"
+)
+
 // DeviceResponse :extension of the http response so that we can add some functions onto it
 type DeviceResponse struct {
 	*http.Response
@@ -35,7 +39,6 @@ func (dr *DeviceResponse) ReadOut(t *testing.T) {
 
 // MakeNewDevicePOSTReq : a fucntion that takes in the serial and the list of relays, bakes up a request and sends back to the testing function
 func MakeNewDevicePOSTReq(s string, rlys []string) *http.Request {
-	bUrl := "http://localhost/devices"
 	// payload thats expected in the request
 	payload := &core.DevRegHttpPayload{
 		Serial:   s,
@@ -63,5 +66,11 @@ func TestDevices(t *testing.T) {
 	assert.Nil(t, err, "Unexpected error making a get request")
 	assert.NotNil(t, resp, "Unexpected nil response from server")
 	assert.Equal(t, resp.StatusCode, 200, "Unexpected status code in http response")
-	// No need to read out the response body since it would an empty schedule slice
+
+	t.Log("Now testing with nil payload on posting new device registration")
+	req, _ := http.NewRequest("POST", fmt.Sprintf("%s/", bUrl), bytes.NewBuffer(nil))
+	resp, err = (&http.Client{}).Do(req)
+	assert.Nil(t, err, "Unexpected error making a get request")
+	assert.Equal(t, 400, resp.StatusCode, "Unexpected status code in http response")
+
 }
