@@ -17,6 +17,9 @@ services:
       ports:
           - "1883:1883"
       volumes:
+          # this is where the config is being generated from, so this volume map is important 
+          # https://blog.feabhas.com/2020/02/running-the-eclipse-mosquitto-mqtt-broker-in-a-docker-container/
+          # http://www.steves-internet-guide.com/mqtt-username-password-example/#:~:text=You%20will%20need%20to%20copy,to%20set%20the%20password_file%20path.
           - ./mosquitto:/mosquitto
       stdin_open: true
       tty:  true

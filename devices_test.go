@@ -86,6 +86,35 @@ func TestDevices(t *testing.T) {
 	assert.Nil(t, err, "Unexpected error making a get request")
 	assert.Equal(t, 400, resp.StatusCode, "Unexpected status code in http response")
 
+	// Getting the mqtt subscriber ready
+
+	// Here we attempt to patch the device's schedule - this shall replace the schedules on the device
+	// former schedules will be patched
+	t.Log("Now trying to patch the schedules for the device")
+	newScheds := []scheduling.JSONRelayState{
+		{ON: "06:00 PM", OFF: "06:00 AM", IDs: []string{"IN1", "IN2", "IN3", "IN4"}, Primary: true},
+		{ON: "04:00 PM", OFF: "05:59 AM", IDs: []string{"IN1", "IN2", "IN3", "IN4"}, Primary: false},
+	}
+	body, _ := json.Marshal(newScheds)
+	req, _ = http.NewRequest("PATCH", fmt.Sprintf("%s/%s", bUrl, serial), bytes.NewBuffer(body))
+	resp, err = (&http.Client{}).Do(req)
+	assert.Nil(t, err, "Unexpected error making a get request")
+	assert.Equal(t, 200, resp.StatusCode, "Unexpected status code in http response")
+	// Now trying to patch the schedules of a device that does not exists
+	// t.Log("Now trying to patch the schedules for the device that isnt registered")
+	// req, _ = http.NewRequest("PATCH", fmt.Sprintf("%s/%s", bUrl, "somerandom4543"), bytes.NewBuffer(body))
+	// resp, err = (&http.Client{}).Do(req)
+	// assert.Nil(t, err, "Unexpected error making a patch request")
+	// assert.Equal(t, 404, resp.StatusCode, "Unexpected status code in http response")
+
+	// // Now sending empty schedule pack to the device - this should be allowed
+	// t.Log("Now trying to patch empty schedule pack")
+	// body, _ = json.Marshal([]scheduling.JSONRelayState{}) //empty schedule pack
+	// req, _ = http.NewRequest("PATCH", fmt.Sprintf("%s/%s", bUrl, serial), bytes.NewBuffer(body))
+	// resp, err = (&http.Client{}).Do(req)
+	// assert.Nil(t, err, "Unexpected error making a patch request")
+	// assert.Equal(t, 200, resp.StatusCode, "Unexpected status code in http response")
+
 	// Now here we are trying to remove a device registration
 	req, _ = http.NewRequest("DELETE", fmt.Sprintf("%s/%s", bUrl, serial), nil)
 	resp, err = (&http.Client{}).Do(req)
