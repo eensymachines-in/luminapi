@@ -68,8 +68,16 @@ func TestDevices(t *testing.T) {
 	assert.NotNil(t, resp, "Unexpected nil response from server")
 	assert.Equal(t, resp.StatusCode, 200, "Unexpected status code in http response")
 
+	// trying to GET the schedules for a registered devices
+	t.Log("Now trying to get the device schedules")
+	req, _ := http.NewRequest("GET", fmt.Sprintf("%s/%s", bUrl, serial), nil)
+	resp, err = (&http.Client{}).Do(req)
+	assert.Nil(t, err, "Unexpected error making a get request")
+	assert.NotNil(t, resp, "Unexpected nil response from server")
+	assert.Equal(t, resp.StatusCode, 200, "Unexpected status code in http response")
+
 	t.Log("Now testing with nil payload on posting new device registration")
-	req, _ := http.NewRequest("POST", fmt.Sprintf("%s/", bUrl), bytes.NewBuffer(nil))
+	req, _ = http.NewRequest("POST", fmt.Sprintf("%s/", bUrl), bytes.NewBuffer(nil))
 	resp, err = (&http.Client{}).Do(req)
 	assert.Nil(t, err, "Unexpected error making a get request")
 	assert.Equal(t, 400, resp.StatusCode, "Unexpected status code in http response")

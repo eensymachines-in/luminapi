@@ -42,6 +42,10 @@ services:
       links:
         - "mosquitto"
         - "srvmongo"
+      secrets:
+        - mqtt_secret
       container_name: luminapi_go
       entrypoint: ["go", "run", "."]
-
+secrets:
+    mqtt_secret:
+      file: ./mqtt.secret
