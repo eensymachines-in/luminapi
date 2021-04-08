@@ -10,6 +10,7 @@ import (
 	"github.com/eensymachines-in/luminapi/core"
 	"github.com/eensymachines-in/scheduling"
 	"github.com/gin-gonic/gin"
+	log "github.com/sirupsen/logrus"
 )
 
 func HandlDevices(c *gin.Context) {
@@ -72,11 +73,30 @@ func HandlDevice(c *gin.Context) {
 
 		// read in the the schedules that need to be patched
 		// If the device is not registered, the middleware will handle it
-		payload := []*scheduling.JSONRelayState{}
+		payload := []scheduling.JSONRelayState{}
 		if c.ShouldBindJSON(&payload) != nil {
 			errx.DigestErr(errx.NewErr(errx.ErrJSONBind{}, nil, "failed to read new schedules", "HandlDevice/ShouldBindJSON"), c)
 			return
 		}
+		// ++++++++++++ here we check for any conflicts within the schedules
+		sojrs := scheduling.SliceOfJSONRelayState(payload)
+		scheds := []scheduling.Schedule{}
+		sojrs.ToSchedules(&scheds)
+
+		for _, s := range scheds {
+			if s.Conflicts() > 0 {
+				// atleast one of the schedules has conflicts
+				// this has to be referred to the client
+				// Here we send back the payload with 400 status code
+				c.JSON(http.StatusBadRequest, payload)
+				log.WithFields(log.Fields{
+					"conflicting": s,
+				}).Warn("We have atleast one schedule that has conflicts")
+				return
+			}
+		}
+		// ++++++++++++ all the below code will run only if there arent any conflicting schedules
+		// Conflicts if found then would send back the schedules as is ErrInvalid
 		if errx.DigestErr(devreg.UpdateSchedules(serial, payload), c) != 0 {
 			return
 		}
@@ -92,7 +112,7 @@ func HandlDevice(c *gin.Context) {
 		return
 	} else if c.Request.Method == "GET" {
 		// Gets the schedules for a device given the serial of the device
-		result := []*scheduling.JSONRelayState{}
+		result := []scheduling.JSONRelayState{}
 		if errx.DigestErr(devreg.GetSchedules(serial, &result), c) != 0 {
 			return
 		}

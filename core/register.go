@@ -30,7 +30,7 @@ type DevRegsColl struct {
 		log.Info(*s)
 	}
 */
-func (drc *DevRegsColl) GetSchedules(serial string, result *[]*scheduling.JSONRelayState) error {
+func (drc *DevRegsColl) GetSchedules(serial string, result *[]scheduling.JSONRelayState) error {
 	yes, err := drc.IsRegistered(serial)
 	if err != nil {
 		return errx.NewErr(&errx.ErrQuery{}, err, "Failed to check if the device is registered", "DevRegsColl/GetSchedules/IsRegistered")
@@ -68,7 +68,7 @@ func (drc *DevRegsColl) Register(serial string, rlyIDS []string, result *DevReg)
 	}
 	// When the server sets it would add the defaul timing to the relay ids the client tells it to
 	// When defaulting the server will not add any patch schedules
-	*result = DevReg{Serial: serial, Schedules: []*scheduling.JSONRelayState{
+	*result = DevReg{Serial: serial, Schedules: []scheduling.JSONRelayState{
 		{ON: "06:30 PM", OFF: "06:30 AM", IDs: rlyIDS, Primary: true},
 	}}
 	// default schedule gets pushed to the collection
@@ -88,7 +88,7 @@ func (drc *DevRegsColl) UnRegister(serial string) error {
 
 // Shall replace the schedules with new set of schedules, this works for one device serial
 // makes no changes to schedules, just replaces them with a new set of schedules
-func (drc *DevRegsColl) UpdateSchedules(serial string, newScheds []*scheduling.JSONRelayState) error {
+func (drc *DevRegsColl) UpdateSchedules(serial string, newScheds []scheduling.JSONRelayState) error {
 	yes, err := drc.IsRegistered(serial)
 	if err != nil {
 		return err

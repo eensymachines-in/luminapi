@@ -41,7 +41,7 @@ func TestCoreRegister(t *testing.T) {
 			return
 		}
 		// now testing to see if we can get the schedules from the registered device
-		schedules := []*scheduling.JSONRelayState{}
+		schedules := []scheduling.JSONRelayState{}
 		err = coll.GetSchedules(serial, &schedules)
 		assert.Nil(t, err, "Was expecting a error when getting schedules of registered devices")
 		if err != nil {

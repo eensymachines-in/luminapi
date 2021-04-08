@@ -57,12 +57,18 @@ func main() {
 			"message": "hi from inside luminapi",
 		})
 	})
-	devices := r.Group("/devices")
+	// I would like to keep the url open for future expansion
+	// incase we woudl want to launch a newer version of the api whilst keeping the older version this can be our window
+	api := r.Group("/api")
+	v1 := api.Group("/v1")
+	// ++++++++++++ devices
+	devices := v1.Group("/devices")
 	devices.Use(dbConnect())
 	devices.POST("/", devregPayload(), checkIfDeviceReg(false), HandlDevices)     // to register new devices
 	devices.DELETE("/:serial", checkIfDeviceReg(true), HandlDevice)               // single device un-register
 	devices.PATCH("/:serial", checkIfDeviceReg(true), mqttConnect(), HandlDevice) // schedules are updated here
 	devices.GET("/:serial", HandlDevice)                                          // GETting the schedules for a device
+
 	log.Info("Starting luminapi service ..")
 	defer log.Warn("Now quitting luminapi service")
 	log.Fatal(r.Run(":8080"))

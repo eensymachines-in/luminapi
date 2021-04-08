@@ -13,12 +13,31 @@ import (
 )
 
 const (
-	bUrl = "http://localhost/devices"
+	bUrl = "http://localhost/api/v1/devices"
 )
 
 // DeviceResponse :extension of the http response so that we can add some functions onto it
 type DeviceResponse struct {
 	*http.Response
+}
+
+/*Closure that sends abck a test func. Context of response and the status selection as params
+send the http.Response from the calling test function to this, and a filter function that can pick the status code as required
+Not all status codes shall warrant the reading of the response body*/
+func ReadBody(resp *http.Response, status_allowed func(int) bool) func(*testing.T) {
+	return func(t *testing.T) {
+		if status_allowed(resp.StatusCode) {
+			// If the request succeeds
+			defer resp.Body.Close()
+			target := []*scheduling.JSONRelayState{}
+			if json.NewDecoder(resp.Body).Decode(&target) != nil {
+				t.Log("We had a problem reading the response body - json.NewDecoder.Decode")
+			}
+			for _, sched := range target {
+				t.Log(sched)
+			}
+		}
+	}
 }
 
 // ReadOut : this will read out the response payload of schedules
@@ -59,7 +78,9 @@ func TestDevices(t *testing.T) {
 	assert.Nil(t, err, "Unexpected error making a get request")
 	assert.NotNil(t, resp, "Unexpected nil response from server")
 	assert.Equal(t, resp.StatusCode, 200, "Unexpected status code in http response")
-	(&DeviceResponse{resp}).ReadOut(t)
+	ReadBody(resp, func(code int) bool {
+		return code == 200
+	})(t)
 	// When the device is already regsitered, re attempting will yeild 200 ok - quickly
 	// The actual request
 	resp, err = (&http.Client{}).Do(MakeNewDevicePOSTReq(serial, relays))
@@ -101,27 +122,42 @@ func TestDevices(t *testing.T) {
 	t.Log("Now trying to patch the schedules for the device")
 	newScheds := []scheduling.JSONRelayState{
 		{ON: "06:00 PM", OFF: "06:00 AM", IDs: []string{"IN1", "IN2", "IN3", "IN4"}, Primary: true},
-		{ON: "04:00 PM", OFF: "05:59 AM", IDs: []string{"IN1", "IN2", "IN3", "IN4"}, Primary: false},
+		{ON: "06:30 PM", OFF: "06:01 PM", IDs: []string{"IN1", "IN2", "IN3", "IN4"}, Primary: false},
 	}
 	body, _ := json.Marshal(newScheds)
 	req, _ = http.NewRequest("PATCH", fmt.Sprintf("%s/%s", bUrl, serial), bytes.NewBuffer(body))
 	resp, err = (&http.Client{}).Do(req)
 	assert.Nil(t, err, "Unexpected error making a get request")
 	assert.Equal(t, 200, resp.StatusCode, "Unexpected status code in http response")
+
+	/*now trying to patch schedules that have conflicts and check the response from api*/
+	conflicScheds := []scheduling.JSONRelayState{
+		{ON: "06:00 PM", OFF: "06:00 AM", IDs: []string{"IN1", "IN2", "IN3", "IN4"}, Primary: true},
+		{ON: "05:50 PM", OFF: "06:30 PM", IDs: []string{"IN1", "IN2", "IN3", "IN4"}, Primary: false},
+	}
+	body, _ = json.Marshal(conflicScheds)
+	req, _ = http.NewRequest("PATCH", fmt.Sprintf("%s/%s", bUrl, serial), bytes.NewBuffer(body))
+	resp, err = (&http.Client{}).Do(req)
+	assert.Nil(t, err, "Unexpected error making a get request")
+	assert.Equal(t, 400, resp.StatusCode, "Unexpected status code in http response")
+	ReadBody(resp, func(code int) bool {
+		return code == 400 || code == 200
+	})(t)
+
 	// Now trying to patch the schedules of a device that does not exists
-	// t.Log("Now trying to patch the schedules for the device that isnt registered")
-	// req, _ = http.NewRequest("PATCH", fmt.Sprintf("%s/%s", bUrl, "somerandom4543"), bytes.NewBuffer(body))
-	// resp, err = (&http.Client{}).Do(req)
-	// assert.Nil(t, err, "Unexpected error making a patch request")
-	// assert.Equal(t, 404, resp.StatusCode, "Unexpected status code in http response")
+	t.Log("Now trying to patch the schedules for the device that isnt registered")
+	req, _ = http.NewRequest("PATCH", fmt.Sprintf("%s/%s", bUrl, "somerandom4543"), bytes.NewBuffer(body))
+	resp, err = (&http.Client{}).Do(req)
+	assert.Nil(t, err, "Unexpected error making a patch request")
+	assert.Equal(t, 404, resp.StatusCode, "Unexpected status code in http response")
 
 	// // Now sending empty schedule pack to the device - this should be allowed
-	// t.Log("Now trying to patch empty schedule pack")
-	// body, _ = json.Marshal([]scheduling.JSONRelayState{}) //empty schedule pack
-	// req, _ = http.NewRequest("PATCH", fmt.Sprintf("%s/%s", bUrl, serial), bytes.NewBuffer(body))
-	// resp, err = (&http.Client{}).Do(req)
-	// assert.Nil(t, err, "Unexpected error making a patch request")
-	// assert.Equal(t, 200, resp.StatusCode, "Unexpected status code in http response")
+	t.Log("Now trying to patch empty schedule pack")
+	body, _ = json.Marshal([]scheduling.JSONRelayState{}) //empty schedule pack
+	req, _ = http.NewRequest("PATCH", fmt.Sprintf("%s/%s", bUrl, serial), bytes.NewBuffer(body))
+	resp, err = (&http.Client{}).Do(req)
+	assert.Nil(t, err, "Unexpected error making a patch request")
+	assert.Equal(t, 200, resp.StatusCode, "Unexpected status code in http response")
 
 	// Now here we are trying to remove a device registration
 	req, _ = http.NewRequest("DELETE", fmt.Sprintf("%s/%s", bUrl, serial), nil)
