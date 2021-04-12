@@ -59,10 +59,11 @@ func main() {
 	})
 	// I would like to keep the url open for future expansion
 	// incase we woudl want to launch a newer version of the api whilst keeping the older version this can be our window
-	api := r.Group("/api")
-	v1 := api.Group("/v1")
+	// this versioning can be handled from the nginx server
+	// api := r.Group("/api")
+	// v1 := api.Group("/v1")
 	// ++++++++++++ devices
-	devices := v1.Group("/devices")
+	devices := r.Group("/devices")
 	devices.Use(dbConnect())
 	devices.POST("/", devregPayload(), checkIfDeviceReg(false), HandlDevices)     // to register new devices
 	devices.DELETE("/:serial", checkIfDeviceReg(true), HandlDevice)               // single device un-register

@@ -1,51 +1,46 @@
 version: '3.1'
 
 services:
-    # nodered:
-    #   image: nodered/node-red:latest
-    #   environment:
-    #     - TZ=Asia/Kolkata
-    #   ports:
-    #     - "1880:1880"
-    #     - "80:80"
-    #   volumes:
-    #     - /data/nodered:/data
-    #   links:
-    #       - "mosquitto"
-    mosquitto:
-      image: eclipse-mosquitto
-      ports:
-          - "1883:1883"
-      volumes:
-          # this is where the config is being generated from, so this volume map is important 
-          # https://blog.feabhas.com/2020/02/running-the-eclipse-mosquitto-mqtt-broker-in-a-docker-container/
-          # http://www.steves-internet-guide.com/mqtt-username-password-example/#:~:text=You%20will%20need%20to%20copy,to%20set%20the%20password_file%20path.
-          - ./mosquitto:/mosquitto
-      stdin_open: true
-      tty:  true
-      container_name: mosquitto_broker
-    srvmongo:
-      image: mongo:4.2-bionic
-      ports:
-          - 37017:27017
-      tty: true
-      stdin_open: true
-      container_name: authapi_mongo
-    luminapi:
-      build: .
-      volumes:
-        - .:/root/go/src/app
-      ports:
-        - 80:8080
-      stdin_open: true
-      tty:  true
-      links:
-        - "mosquitto"
-        - "srvmongo"
-      secrets:
-        - mqtt_secret
-      container_name: luminapi_go
-      entrypoint: ["go", "run", "."]
+  nginx:
+    build: ./nginx
+    ports:
+      - "80:80"
+    depends_on:
+      - "luminapi"
+  mosquitto:
+    image: eclipse-mosquitto
+    ports:
+        - "1883:1883"
+    volumes:
+        # this is where the config is being generated from, so this volume map is important 
+        # https://blog.feabhas.com/2020/02/running-the-eclipse-mosquitto-mqtt-broker-in-a-docker-container/
+        # http://www.steves-internet-guide.com/mqtt-username-password-example/#:~:text=You%20will%20need%20to%20copy,to%20set%20the%20password_file%20path.
+        - ./mosquitto:/mosquitto
+    stdin_open: true
+    tty:  true
+    container_name: mosquitto_broker
+  srvmongo:
+    image: mongo:4.2-bionic
+    ports:
+        - 37017:27017
+    tty: true
+    stdin_open: true
+    container_name: authapi_mongo
+  luminapi:
+    build: .
+    volumes:
+      - .:/root/go/src/app
+    ports:
+      - 8080:8080
+    stdin_open: true
+    tty:  true
+    links:
+      - "mosquitto"
+      - "srvmongo"
+    secrets:
+      - mqtt_secret
+    container_name: luminapi_go
+    entrypoint: ["go", "run", "."]
 secrets:
     mqtt_secret:
       file: ./mqtt.secret
