@@ -1,2 +1,2 @@
 *.secret
-mosquitto/config/p.*
+mosquitto/config/p.txt

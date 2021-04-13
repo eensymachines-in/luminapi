@@ -29,18 +29,21 @@ services:
   luminapi:
     build: .
     volumes:
-      - .:/root/go/src/app
+      - ${LCLDIR}:${LCLDIR}
+      - .:${REPODIR}
     ports:
       - 8080:8080
-    stdin_open: true
-    tty:  true
+    environment: 
+      - LOGF=${LCLDIR}/logs/lumin.log
+    stdin_open: ${TTYSTDIN}
+    tty:  ${TTYSTDIN}
     links:
       - "mosquitto"
       - "srvmongo"
     secrets:
       - mqtt_secret
     container_name: luminapi_go
-    entrypoint: ["go", "run", "."]
+    entrypoint: ["go", "run", ".","-flog=${FLOG}", "-verbose=${VERBOSE}"]
 secrets:
     mqtt_secret:
       file: ./mqtt.secret
