@@ -30,7 +30,6 @@ services:
     build: .
     volumes:
       - ${LCLDIR}:${LCLDIR}
-      - .:${REPODIR}
     ports:
       - 8080:8080
     environment: 
