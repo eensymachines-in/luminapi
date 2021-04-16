@@ -10,7 +10,7 @@ services:
   mosquitto:
     image: eclipse-mosquitto
     ports:
-        - "1883:1883"
+      - "1883:1883"
     volumes:
         # this is where the config is being generated from, so this volume map is important 
         # https://blog.feabhas.com/2020/02/running-the-eclipse-mosquitto-mqtt-broker-in-a-docker-container/
@@ -30,10 +30,11 @@ services:
     build: .
     volumes:
       - ${LCLDIR}:${LCLDIR}
+      - /var/log/eensymachines:/var/log/eensymachines
     ports:
       - 8080:8080
     environment: 
-      - LOGF=${LCLDIR}/logs/lumin.log
+      - LOGF=/var/log/eensymachines/lumin.log
     stdin_open: ${TTYSTDIN}
     tty:  ${TTYSTDIN}
     links:

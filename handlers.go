@@ -1,9 +1,11 @@
 package main
 
 import (
+	"bufio"
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"os"
 
 	mqtt "github.com/eclipse/paho.mqtt.golang"
 	"github.com/eensymachines-in/errx"
@@ -12,6 +14,32 @@ import (
 	"github.com/gin-gonic/gin"
 	log "github.com/sirupsen/logrus"
 )
+
+// HndlLogs : in the context of the log file path this send out a handler used by the api to output logs
+func HndlLogs(filePath string) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		if c.Request.Method == "GET" {
+			file, err := os.Open(filePath)
+			if err != nil {
+				// failed to open the log path file, hence sending back an error
+				errx.DigestErr(errx.NewErr(errx.ErrInvalid{}, nil, "Failed to get log file at path. Check to see if logging is set", "HndlLogs/os.Open"), c)
+				return
+			}
+			defer file.Close()
+			reader := bufio.NewReader(file)
+			result := []string{}
+			for i := 0; i < 100; i++ {
+				l, _, _ := reader.ReadLine()
+				if len(string(l)) == 0 {
+					// this generally means we have reached the end of the file
+					break
+				}
+				result = append(result, string(l))
+			}
+			c.JSON(http.StatusOK, result)
+		}
+	}
+}
 
 func HandlDevices(c *gin.Context) {
 	// Getting values from middleware - database connection and clean up closures

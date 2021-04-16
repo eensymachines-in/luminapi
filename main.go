@@ -3,6 +3,7 @@ package main
 import (
 	"bufio"
 	"flag"
+	"io"
 	"os"
 	"strings"
 	"time"
@@ -67,16 +68,26 @@ func main() {
 	logFile := os.Getenv("LOGF")
 	if logFile != "" {
 		closeLogFile := utl.CustomLog(Flog, FVerbose, logFile) // Log direction and the level of logging
+		file, err := os.Open(os.Getenv("LOGF"))
+		if err != nil {
+			log.Fatal(err)
+		}
+		gin.DisableConsoleColor()
+		gin.DefaultWriter = io.MultiWriter(file)
+		defer file.Close()
 		defer closeLogFile()
 	}
-	gin.SetMode(gin.ReleaseMode)
+	gin.SetMode(gin.DebugMode)
 	r := gin.Default()
 	r.Use(CORS)
 	r.GET("/ping", func(c *gin.Context) {
 		c.JSON(200, gin.H{
-			"message": "hi from inside luminapi",
+			"app":     "luminapi",
+			"logs":    logFile,
+			"verblog": FVerbose,
 		})
 	})
+	r.GET("/logs", HndlLogs(os.Getenv("LOGF")))
 	// I would like to keep the url open for future expansion
 	// incase we woudl want to launch a newer version of the api whilst keeping the older version this can be our window
 	// this versioning can be handled from the nginx server
