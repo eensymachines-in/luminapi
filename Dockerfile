@@ -2,9 +2,15 @@
 FROM golang:1.15.11-alpine3.13
 # from the vanilla image of go gin with mgo driver
 # mapping for log files
-RUN mkdir -p /var/local/eensymachines/logs && mkdir -p /var/local/eensymachines/configs && mkdir -p /var/local/eensymachines/sockets
-RUN mkdir -p $HOME/repos/eensymachines.in/luminapi
-WORKDIR $HOME/repos/eensymachines.in/luminapi
-COPY . .
+ARG SRC
+ARG LOG
+ARG RUN
+ARG ETC 
+ARG BIN
+# making all the specific directories, refer to the env file which has the values 
+RUN mkdir -p ${SRC} && mkdir -p ${LOG} && mkdir -p ${RUN} && mkdir -p ${ETC}
+WORKDIR ${SRC}
+COPY go.sum go.mod ./
 RUN go mod download 
-RUN go build -o luminapi .
+COPY . .
+RUN go build -o ${BIN}/luminapi .

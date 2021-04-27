@@ -55,7 +55,7 @@ func init() {
 	if len(result) == 2 {
 		log.WithFields(log.Fields{
 			"mqtt_u": result[0],
-			"mqtt_p": result[1],
+			"mqtt_p": "*******", //result[1],
 		}).Info("we have now loaded the mqtt credentials")
 		// Setting the environment variables
 		os.Setenv("MQTT_U", result[0])
@@ -87,7 +87,7 @@ func main() {
 			"verblog": FVerbose,
 		})
 	})
-	r.GET("/logs", HndlLogs(os.Getenv("LOGF")))
+	r.GET("/admin/logs", HndlLogs(os.Getenv("LOGF")))
 	// I would like to keep the url open for future expansion
 	// incase we woudl want to launch a newer version of the api whilst keeping the older version this can be our window
 	// this versioning can be handled from the nginx server

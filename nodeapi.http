@@ -1,6 +1,0 @@
-POST http://localhost:1880/hello
-Content-Type: application/json
-
-{
-    "message":"hello, hello.. subway ka sandwich"
-}

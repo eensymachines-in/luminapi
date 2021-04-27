@@ -1,0 +1,4 @@
+tests/*
+nginx/*
+mosquitto/*
+.git

@@ -128,6 +128,7 @@ func mqttConnect() gin.HandlerFunc {
 			errx.DigestErr(errx.NewErr(&errx.ErrEncrypt{}, fmt.Errorf("invalid username or password for the mqtt broker"), "One of our gateways had a error, please try after sometime", "mqttConnect"), c)
 			return
 		}
+		/*Check the init function of the application, here in the middleware we are expecting the username and the password to be loaded in the container environment*/
 		opts.SetUsername(os.Getenv("MQTT_U"))
 		opts.SetPassword(os.Getenv("MQTT_P"))
 		// opts.SetDefaultPublishHandler(messagePubHandler)
@@ -139,6 +140,9 @@ func mqttConnect() gin.HandlerFunc {
 			errx.DigestErr(token.Error(), c)
 			return
 		}
+		// check the handler for disconnect.
+		// It is important to disconnect and dispose the client
+		// unlike the database connection, this would be disposed in the handler
 		c.Set("mqttclient", client)
 	}
 

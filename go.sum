@@ -15,6 +15,8 @@ github.com/eensymachines-in/scheduling v0.0.0-20210402131715-b0295967dfea h1:con
 github.com/eensymachines-in/scheduling v0.0.0-20210402131715-b0295967dfea/go.mod h1:oZRG7/nLUHnY5ljpHxVQwkSVQtHEYq9fzx2HXsBHJnA=
 github.com/eensymachines-in/scheduling v0.0.0-20210407150707-b909fe11cc31 h1:pvl/QsV8/8hBPiHElSFI25ZzYJMRPdskL0tIv1AtRNg=
 github.com/eensymachines-in/scheduling v0.0.0-20210407150707-b909fe11cc31/go.mod h1:oZRG7/nLUHnY5ljpHxVQwkSVQtHEYq9fzx2HXsBHJnA=
+github.com/eensymachines-in/utilities v1.0.3 h1:fstJed1gBHYgRoIREwoKQNVOP1XT+VOeCbefyyksUM0=
+github.com/eensymachines-in/utilities v1.0.3/go.mod h1:ZqZvV0qo6mJANZqzPxJk431OFUZMaa4ZDoz2Rnd+XsE=
 github.com/gin-contrib/sse v0.1.0 h1:Y/yl/+YNO8GZSjAhjMsSuLt29uWRFHdHYUb5lYOV9qE=
 github.com/gin-contrib/sse v0.1.0/go.mod h1:RHrZQHXnP2xjPF+u1gW/2HnVO7nvIa9PG3Gm+fLHvGI=
 github.com/gin-gonic/gin v1.6.3 h1:ahKqKTFpO5KTPHxWZjEdPScmYaGtLo8Y4DMHoEsnp14=

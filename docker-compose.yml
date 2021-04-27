@@ -27,14 +27,21 @@ services:
     stdin_open: true
     container_name: authapi_mongo
   luminapi:
-    build: .
+    build: 
+      context: .
+      dockerfile: ./Dockerfile 
+      args:
+        - SRC=${SRCDIR}
+        - LOG=${LOGDIR}
+        - RUN=${RUNDIR}
+        - ETC=${ETCDIR}
+        - BIN=${BINDIR}
     volumes:
-      - ${LCLDIR}:${LCLDIR}
-      - /var/log/eensymachines:/var/log/eensymachines
+      - ${LOGDIR}:${LOGDIR}
     ports:
       - 8080:8080
     environment: 
-      - LOGF=/var/log/eensymachines/lumin.log
+      - LOGF=${LOGDIR}/lumin.log
     stdin_open: ${TTYSTDIN}
     tty:  ${TTYSTDIN}
     links:
@@ -42,8 +49,8 @@ services:
       - "srvmongo"
     secrets:
       - mqtt_secret
-    container_name: luminapi_go
-    entrypoint: ["go", "run", ".","-flog=${FLOG}", "-verbose=${VERBOSE}"]
+    container_name: contn_luminapi
+    entrypoint: ["${BINDIR}/luminapi","-flog=${FLOG}", "-verbose=${VERBOSE}"]
 secrets:
     mqtt_secret:
       file: ./mqtt.secret
