@@ -87,12 +87,9 @@ func main() {
 			"verblog": FVerbose,
 		})
 	})
-	r.GET("/admin/logs", HndlLogs(os.Getenv("LOGF")))
-	// I would like to keep the url open for future expansion
-	// incase we woudl want to launch a newer version of the api whilst keeping the older version this can be our window
-	// this versioning can be handled from the nginx server
-	// api := r.Group("/api")
-	// v1 := api.Group("/v1")
+	/*Admin related tasks here under one group. Check the nginx conf this has been appropriately */
+	grpAdmin := r.Group("/admin")
+	grpAdmin.GET("/logs", HndlLogs(os.Getenv("LOGF")))
 	// ++++++++++++ devices
 	devices := r.Group("/devices")
 	devices.Use(dbConnect())
