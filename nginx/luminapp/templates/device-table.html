@@ -1,0 +1,25 @@
+<div>
+    <h3 
+      data-trigger="click" data-placement="top" data-content="{[authInfo.email]}" data-toggle="popover" data-html="true"
+      class="text-info email-label">{[authInfo.name]}
+    </h3>
+    <table class="table table-hover">
+      <thead>
+        <tr>
+          <th scope="col">Serial</th>
+          <th scope="col">Hardware</th>
+          <th scope="col">Model</th>
+          <th scope="col">Lock</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr class="table-active" ng-repeat="ud in devices">
+          <td>{[ud.serial|serialFlt]}</td>
+          <td >{[ud.hw]}</td>
+          <td>{[ud.model|nameFlt:12]}</td>
+          <td><strong><i ng-class="{true:'bi-lock text-danger', false:'bi-unlock text-success'}[ud.lock==true]" class="bi"></i></strong></td>
+        </tr>
+      </tbody>
+    </table>
+    <ng-transclude></ng-transclude>
+  </div>

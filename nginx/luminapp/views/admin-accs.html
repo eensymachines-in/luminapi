@@ -1,0 +1,19 @@
+<div class="container" authorized-only lvl=2>
+    <div class="row my-3">
+        <div class="col-lg-8 offset-lg-2">
+            <div class="alert alert-dismissible alert-warning">
+                <button type="button" class="close" data-dismiss="alert">&times;</button>
+                <h4 class="alert-heading">Caution!</h4>
+                <p class="mb-0">You are now performing administration tasks, altering accounts may adversely affect the device operations. Do NOT proceed unless you are sure.</p>
+            </div>
+        </div>
+    </div>
+    <div class="row my-3">
+        <div class="col-lg-8 offset-lg-2">
+            <acc-table>
+                <!-- <button type="button" class="btn btn-secondary" title="">Left</button> -->
+                <submit-confirm submit="submit()" btn-lbl="<i class='far fa-paper-plane'></i>&nbsp;Submit" pop-confirm></submit-confirm>
+            </acc-table>
+        </div>
+    </div>
+</div>

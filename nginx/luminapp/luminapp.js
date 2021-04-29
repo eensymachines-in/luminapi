@@ -9,21 +9,18 @@
         .when("/:email/account", {
             templateUrl:"/views/account.html",
         })
-        // .when("/:email/devices", {
-        //     templateUrl:"/static/views/user-devices.html",
-        // })
-        // .when("/signup", {
-        //     templateUrl:"/static/views/signup.html",
-        // })
-        // .when("/about", {
-        //     templateUrl:"/static/views/about.html",
-        // })
-        // .when("/admin/accounts", {
-        //     templateUrl:"/static/views/admin-accs.html",
-        // }) 
-        // .when("/admin/:email/devices", {
-        //     templateUrl:"/static/views/admin-devices.html",
-        // })
+        .when("/:email/devices", {
+            templateUrl:"/views/user-devices.html",
+        })
+        .when("/signup", {
+            templateUrl:"/views/signup.html",
+        })
+        .when("/about", {
+            templateUrl:"/views/about.html",
+        })
+        .when("/admin/accounts", {
+            templateUrl:"/views/admin-accs.html",
+        }) 
         // .when("/admin/embargo", {
         //     templateUrl:"/static/views/embargo-devices.html",
         // })

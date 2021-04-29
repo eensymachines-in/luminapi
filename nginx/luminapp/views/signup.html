@@ -1,0 +1,17 @@
+<div class="container">
+    <div class="row my-3">
+        <div class="col-lg-6 offset-lg-3 well">
+            <div class="alert alert-light">
+                <strong class="text-secondary">Hey!</strong> Create your user account here. All your devices will be mapped under this account.
+              </div>
+        </div>
+    </div>
+    <div class="row" style="margin-top: -3ex;">
+        <div class="col-lg-6 offset-lg-3" ng-controller="postAccCtrl">
+            <!-- directive to let change the account details of the user -->
+            <acc-details lbl-hide role-hide email-edit>
+                <submit-confirm btn-lbl='<i class="bi bi-person-plus-fill"></i>&nbsp;Register'></submit-confirm>
+            </acc-details>
+        </div>
+    </div>
+</div>

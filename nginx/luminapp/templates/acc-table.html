@@ -1,0 +1,26 @@
+<div style="max-height:30em;overflow-y: scroll;">
+    <table class="table table-hover">
+      <thead>
+        <tr class="table-active">
+          <th ng-if="nameHide==false" scope="col">Name</th>
+          <th scope="col">Email</th>
+          <th ng-if="locHide==false" scope="col">Location</th>
+          <th scope="col">Role</th>
+          <th scope="col">Go to</th>
+          <th scope="col">Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr  ng-repeat="a in listOfAccs" ng-class="{true: 'deleted'}[a.del==true]">
+          <td ng-if="nameHide==false">{[a.name|nameFlt:8]}</td>
+          <td>{[a.email|emailFlt]}</td>
+          <td ng-if="locHide==false">{[a.loc|locFlt]}</td>
+          <td><h5><i class="bi role" ng-class="{0:'bi-person',1:'bi-person-plus',2:'bi-person-square'}[a.role]">
+          </i></h5></td>
+          <td><h6><a href="#!/admin/{[a.email]}/devices" style="cursor: pointer;">Devices</a></h6></td>
+          <td><h5><i ng-click="a.mark_for_delete()" ng-if="a.role<2" class="bi bi-trash" style="cursor: pointer;"></i></h5></td>
+        </tr>
+      </tbody>
+    </table>
+    <ng-transclude></ng-transclude>
+  </div>
