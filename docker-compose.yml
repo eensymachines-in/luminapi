@@ -5,6 +5,8 @@ services:
     build: ./nginx
     ports:
       - "80:80"
+    volumes: 
+      - "/home/niranjan/repos/eensymachines.in/luminapi/nginx/luminapp:/var/www/luminapp"
     depends_on:
       - "luminapi"
   mosquitto:

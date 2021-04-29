@@ -1,0 +1,36 @@
+<form class="border border-light rounded" style="padding:1ex;">
+    <fieldset>
+        <div class="form-group" ng-class="{true:'has-danger'}[isEmailInvalid==true]" ng-if ="emailHide==false">
+            <label ng-if="lblHide==false" for="accEmail">Email</label>
+            <input ng-click="show_help($event)" ng-class="{true:'is-invalid'}[isEmailInvalid==true]" 
+            ng-disabled="emailEdit==false" ng-model="details.email" 
+            type="text" class="form-control" id="accEmail" aria-describedby="emailHelp" placeholder="Email">
+            <div class="invalid-feedback">Something is not quite right about the email, Try again?</div>
+        </div>
+        <div class="form-group" ng-class="{true:'has-danger'}[isPassInvalid==true]" ng-if ="passwdHide==false">
+            <label ng-if="lblHide==false" for="accPass">Password</label>
+            <input ng-click="show_help($event)" ng-class="{true:'is-invalid'}[isPassInvalid==true]" ng-model="details.passwd" 
+            type="password" class="form-control" id="accPass" aria-describedby="passHelp" placeholder="Password">
+            <div class="invalid-feedback">Something is not quite right about the password, Try again?</div>
+        </div>
+        <div class="form-group" ng-if="roleHide==false && detailsHide ==false">
+            <label ng-if="lblHide==false" for="accRole">Role</label>
+            <input ng-model="details.role" ng-disabled="roleEdit==false" type="number" class="form-control" id="accRole" placeholder="Role">
+        </div>
+        <div class="form-group" ng-if ="detailsHide ==false">
+            <label ng-if="lblHide==false" for="accName">Name</label>
+            <input ng-model="details.name" type="text" class="form-control" id="accName" aria-describedby="emailHelp" placeholder="Name">
+        </div>
+        <div class="form-group" ng-if ="detailsHide ==false"> 
+            <label ng-if="lblHide==false" for="accName">Location</label>
+            <input ng-model="details.loc" type="text" class="form-control" id="accLoc" aria-describedby="emailHelp" placeholder="Location">
+        </div>
+        <div class="form-group" ng-if ="detailsHide ==false">
+            <label ng-if="lblHide==false" for="accPhone">Phone</label>
+            <input ng-model="details.phone" type="text" class="form-control" id="accPhone" aria-describedby="emailHelp" placeholder="Phone">
+        </div>
+        <!-- button submits changes to the server -->
+        <!-- cause the button needs some customization -->
+        <ng-transclude></ng-transclude>
+    </fieldset>
+</form>

@@ -1,0 +1,24 @@
+<div class="container" authorized-only lvl=0>
+    <div class="row my-3">
+        <div class="col-lg-6 offset-lg-3 well">
+            <div class="alert alert-warning">
+                <strong >Hey!</strong> Altering account information does <strong>not</strong> affect your device's operations.
+              </div>
+        </div>
+    </div>
+    <div class="row" style="margin-top: -3ex;">
+        <div class="col-lg-6 offset-lg-3" ng-controller="putAccCtrl">
+            <!-- directive to let change the account details of the user -->
+            <acc-details passwd-hide>
+                <submit-confirm pop-confirm btn-lbl="<i class='bi bi-check2-circle'></i>&nbsp;Update"></submit-confirm>
+            </acc-details>
+        </div>
+    </div>
+    <div class="row my-2">
+        <div class="col-lg-6 offset-lg-3" ng-controller="patchAccCtrl">
+            <acc-details details-hide lbl-hide email-hide>
+                <submit-confirm pop-confirm btn-lbl='<i class="bi bi-shield-plus"></i>&nbsp;Password change'></submit-confirm>
+            </acc-details>
+        </div>
+    </div>
+</div>
