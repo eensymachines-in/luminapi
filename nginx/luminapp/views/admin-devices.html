@@ -1,0 +1,19 @@
+<div class="container" authorized-only lvl=2>
+    <!-- this is readonly device table for regular users to only see their device details -->
+    <div class="row my-3">
+        <div class="col-lg-8 offset-lg-2">
+            <div class="alert alert-dismissible alert-warning">
+                <button type="button" class="close" data-dismiss="alert">&times;</button>
+                <h4 class="alert-heading">Warning!</h4>
+                <p class="mb-0">You are in admin mode, making changes could be irreversible. If you are able to access this despite being a non-admin, close the browser and write to us at <a target="_blank" href="mailto:hello@eensymachines.in">hello@eensymachines.in</a></p>
+              </div>
+        </div>
+    </div>
+    <div class="row my-3">
+        <div class="col-lg-8 offset-lg-2" style="overflow: hidden; overflow-y: scroll; max-height: 25em;">
+            <device-table edit=true>
+                <submit-confirm submit="submit()" btn-lbl="<i class='far fa-paper-plane'></i>&nbsp;Submit" pop-confirm></submit-confirm>
+            </device-table>
+        </div>
+    </div>
+</div>

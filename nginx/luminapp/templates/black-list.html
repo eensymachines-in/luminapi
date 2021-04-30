@@ -1,0 +1,19 @@
+<div>
+    <section ng-hide="devices.length==0">
+      <ul class="list-group">
+        <li class="list-group-item d-flex justify-content-between align-items-center" ng-repeat="d in devices">
+            {[d.serial]}
+            <span ng-class="{true:'bi-suit-club-fill text-danger', false:'bi-suit-club text-success'}[d.blacked==true]" 
+            ng-click ="d.toggle()" class="bi float-right" style="cursor: pointer;"></span>
+        </li>
+      </ul>
+      <br>
+      <ng-transclude></ng-transclude>
+    </section>
+    <section ng-show="devices.length==0">
+      <div class="alert alert-dismissible alert-light">
+        <button type="button" class="close" data-dismiss="alert">&times;</button>
+        <strong><i class="bi bi-eyeglasses"></i></strong> Received no results to display. There aren't any black listed devices it seems.
+      </div>
+    </section>
+  </div>

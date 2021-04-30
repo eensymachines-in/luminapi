@@ -51,6 +51,7 @@
                 // Device lists under administration are editable 
                 // while under user login will be viewable only
                 $scope.editable = $attrs.edit ? ($attrs.edit =='true') : false
+                console.log("Device table is editable: "+ $scope.editable);
                 $scope.devices = [];
                 if ($scope.authInfo) {
                     srvRefactor($scope).get_list_from_api(function(){
@@ -65,6 +66,7 @@
                             el.toggle_lock= function(){
                                 if (el.black==false){
                                     // if the device is already blacked there is no point in locking /unlocking
+                                    console.log("now toggling the lock status for the device")
                                     el.lock = !el.lock;
                                     el.modified = !el.modified;
                                 }

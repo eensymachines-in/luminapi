@@ -18,12 +18,15 @@
         .when("/about", {
             templateUrl:"/views/about.html",
         })
+        .when("/admin/:email/devices", {
+            templateUrl:"/views/admin-devices.html",
+        })
         .when("/admin/accounts", {
             templateUrl:"/views/admin-accs.html",
         }) 
-        // .when("/admin/embargo", {
-        //     templateUrl:"/static/views/embargo-devices.html",
-        // })
+        .when("/admin/embargo", {
+            templateUrl:"/views/embargo-devices.html",
+        })
         .otherwise({redirectTo:"/"})
         // serves up a regex that can help us test and identify a valid email id
         // this will be used by multiple controllers

@@ -10,6 +10,7 @@
           <th scope="col">Hardware</th>
           <th scope="col">Model</th>
           <th scope="col">Lock</th>
+          <th ng-if="editable==true" scope="col">Blacked</th>
         </tr>
       </thead>
       <tbody>
@@ -17,7 +18,15 @@
           <td>{[ud.serial|serialFlt]}</td>
           <td >{[ud.hw]}</td>
           <td>{[ud.model|nameFlt:12]}</td>
-          <td><strong><i ng-class="{true:'bi-lock text-danger', false:'bi-unlock text-success'}[ud.lock==true]" class="bi"></i></strong></td>
+          <td ng-click="ud.toggle_lock()" class="clickable">
+            <h4><strong><i ng-class="{true:'bi-lock text-danger', false:'bi-unlock text-success'}[ud.lock==true]" class="bi"
+              ></i></strong></h4>
+          </td>
+          <td ng-if="editable==true" ng-click="ud.toggle_black()" class="clickable">
+            <h4>
+              <strong><i ng-class="{true:'bi bi-suit-club-fill text-danger', false:'bi bi-suit-club text-success'}[ud.black==true]" class="bi"
+                ></i></strong></td>
+            </h4>
         </tr>
       </tbody>
     </table>

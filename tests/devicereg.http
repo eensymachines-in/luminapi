@@ -1,0 +1,10 @@
+
+POST http://auth.eensymachines.in/devices HTTP/1.1
+Content-Type: application/json
+
+{
+    "user":"kneerunjun@gmail.com",
+    "hw":"BCM2835",
+    "serial":"000000007920365c",
+    "model":"Raspberry Pi 3 Model B Rev 1.2"
+}

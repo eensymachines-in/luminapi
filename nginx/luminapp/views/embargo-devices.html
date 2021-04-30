@@ -1,0 +1,22 @@
+<div class="container" authorized-only lvl=2>
+    <div class="row my-3">
+        <div class="col-lg-8 offset-lg-2">
+            <div class="alert alert-dismissible alert-warning">
+                <button type="button" class="close" data-dismiss="alert">&times;</button>
+                <h4 class="alert-heading">Warning!</h4>
+                <p class="mb-0">You are in admin mode, making changes could be irreversible. White listing devices could potentially make them active again.<a target="_blank" href="mailto:hello@eensymachines.in">hello@eensymachines.in</a></p>
+            </div>
+        </div>
+    </div>
+    <div class="row my-3">
+        <div class="col-lg-8 offset-lg-2">
+           <black-list>
+                <submit-confirm 
+                    ng-hide="devices.length==0" 
+                    submit="submit()" 
+                    btn-lbl="<i class='far fa-paper-plane'></i>&nbsp;Submit" pop-confirm>
+                </submit-confirm>
+           </black-list>
+        </div>
+    </div>
+</div>
