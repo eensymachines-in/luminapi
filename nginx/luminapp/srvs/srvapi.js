@@ -31,7 +31,7 @@
             var defered  = $q.defer();
             execute_request({
                 method :"GET",
-                url:"http://localhost/api/v1/devices/"+serial,
+                url:baseURL.lumin+"/"+serial,
                 headers:{
                     'Content-Type': "application/json",
                 },
@@ -42,7 +42,7 @@
             var defered  = $q.defer();
             execute_request({
                 method :"PATCH",
-                url:"http://localhost/api/v1/devices/"+serial,
+                url:baseURL.lumin+"/"+serial,
                 headers:{
                     'Content-Type': "application/json",
                 },
@@ -55,7 +55,7 @@
             var defered  = $q.defer();
             execute_request({
                 method :"GET",
-                url:baseURL+"/devices?black=true",
+                url:baseURL.auth+"/devices?black=true",
                 headers:{
                     'Content-Type': "application/json",
                 },
@@ -68,7 +68,7 @@
              authInfo = lclStorage.get_auth()
              execute_request({
                 method :"PATCH",
-                url:baseURL+"/devices/"+serial+"?black="+black,
+                url:baseURL.auth+"/devices/"+serial+"?black="+black,
                 headers:{
                     'Content-Type': "application/json",
                     'Authorization': "Bearer "+ authInfo.authtok,
@@ -82,7 +82,7 @@
             authInfo = lclStorage.get_auth()
             execute_request({
                 method :"PATCH",
-                url:baseURL+"/devices/"+serial+"?lock="+lock,
+                url:baseURL.auth+"/devices/"+serial+"?lock="+lock,
                 headers:{
                     'Content-Type': "application/json",
                     'Authorization': "Bearer "+ authInfo.authtok,
@@ -95,7 +95,7 @@
             var defered  = $q.defer();
             execute_request({
                 method :"GET",
-                url:baseURL+"/users/"+email+"/devices",
+                url:baseURL.auth+"/users/"+email+"/devices",
                 headers:{
                     'Content-Type': "application/json",
                 },
@@ -106,7 +106,7 @@
             var defered  = $q.defer();
             execute_request({
                 method :"POST",
-                url:baseURL+"/users",
+                url:baseURL.auth+"/users",
                 headers:{
                     'Content-Type': "application/json",
                 },
@@ -120,7 +120,7 @@
             var b64Encoded = btoa(email+":"+passwd)
             execute_request({
                 method :"PATCH",
-                url:baseURL+"/users/"+email,
+                url:baseURL.auth+"/users/"+email,
                 headers:{
                     'Content-Type': "application/json",
                     'Authorization': "Basic "+ b64Encoded
@@ -133,7 +133,7 @@
             authInfo = lclStorage.get_auth()
             execute_request({
                 method :"PUT",
-                url:baseURL+"/users/"+newAccDetails.email,
+                url:baseURL.auth+"/users/"+newAccDetails.email,
                 headers:{
                     'Content-Type': "application/json",
                     'Authorization': "Bearer "+ authInfo.authtok
@@ -156,7 +156,7 @@
             }else {
                 execute_request({
                     method :"DELETE",
-                    url:baseURL+"/users/"+e,
+                    url:baseURL.auth+"/users/"+e,
                     headers:{
                         'Content-Type': "application/json",
                         'Authorization': "Bearer "+ lclAuth.authtok
@@ -181,7 +181,7 @@
             }else {
                 execute_request({
                     method :"GET",
-                    url:baseURL+"/users",
+                    url:baseURL.auth+"/users",
                     headers:{
                         'Content-Type': "application/json",
                         'Authorization': "Bearer "+ lclAuth.authtok
@@ -194,7 +194,7 @@
             var defered  = $q.defer();
             execute_request({
                 method :"GET",
-                url:baseURL+"/users/"+email,
+                url:baseURL.auth+"/users/"+email,
                 headers:{
                     'Content-Type': "application/json",
                 }
@@ -208,7 +208,7 @@
             var defered  = $q.defer();
             var request  = {
                 method :"GET",
-                url:baseURL+"/authorize?lvl="+lvl,
+                url:baseURL.auth+"/authorize?lvl="+lvl,
                 headers:{
                     'Content-Type': "application/json",
                     'Authorization': "Bearer "+ auth
@@ -219,7 +219,7 @@
             }, function(response){
                 if (response.status == 401) {
                     // the token has expired, now proceeding to refresh the tokens
-                    request.url = baseURL+"/authorize?refresh=true"
+                    request.url = baseURL.auth+"/authorize?refresh=true"
                     request.headers = {
                         'Content-Type': "application/json",
                         'Authorization': "Bearer "+ refr
@@ -245,7 +245,7 @@
             if (authInfo !==undefined){
                 var request  = {
                     method :"DELETE",
-                    url:baseURL+"/authorize",
+                    url:baseURL.auth+"/authorize",
                     headers:{
                         'Content-Type': "application/json",
                         'Authorization': "Bearer "+ authInfo.authtok
@@ -279,7 +279,7 @@
             var b64Encoded = btoa(email+":"+passwd) // since when logging in you need to base64 encode the email and pass
             var request  = {
                 method :"POST",
-                url:baseURL+"/authenticate/"+email,
+                url:baseURL.auth+"/authenticate/"+email,
                 headers:{
                     'Content-Type': "application/json",
                     'Authorization': "Basic "+ b64Encoded

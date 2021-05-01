@@ -54,7 +54,10 @@
         $provide.provider("baseURL", function(){
             // change this when the subdomain changes and all the services will follow
             this.$get = function(){
-                return "http://auth.eensymachines.in"
+                return {
+                    auth : "http://auth.eensymachines.in",
+                    lumin: "http://localhost/api/v1/devices"
+                }
             }
         })
     }).filter("nameFlt", function(){
