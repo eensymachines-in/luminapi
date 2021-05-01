@@ -15,7 +15,8 @@
       </thead>
       <tbody>
         <tr class="table-active" ng-repeat="ud in devices">
-          <td>{[ud.serial|serialFlt]}</td>
+          <!-- clicking on this shall take you to the schedules -->
+          <td><a href="#!/{[ud.serial]}/schedules">{[ud.serial|serialFlt]}</a></td>
           <td >{[ud.hw]}</td>
           <td>{[ud.model|nameFlt:12]}</td>
           <td ng-click="ud.toggle_lock()" class="clickable">

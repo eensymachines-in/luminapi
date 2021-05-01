@@ -1,0 +1,46 @@
+<div class="container">
+    <div class="row my-3">
+        <div class="col-lg-8 offset-lg-2" ng-controller="schedCtrl">
+          <table class="table table-hover">
+              <thead>
+                <tr>
+                  <th scope="col">Type</th>
+                  <th scope="col">On time</th>
+                  <th scope="col">Off time</th>
+                  <th scope="col">Nodes</th>
+                  <th scope="col">Remove</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr class="" ng-repeat="s in schedules track by $index">
+                  <th scope="row"> <h4><i ng-if="s.primary==true" class="bi bi-award"></i></h4></th>
+                  <td>
+                    <div class="form-group">
+                      <input ng-model="s.on" type="text" class="form-control" placeholder="Default input" id="onTime">
+                    </div>
+                  </td>
+                  <td>
+                      <div class="form-group">
+                          <input ng-model="s.off" type="text" class="form-control" placeholder="Default input" id="offTime">
+                      </div>
+                  </td>
+                  <!-- this set of badges should be editable -->
+                  <td>
+                      <span ng-repeat="n in s.ids" class="badge badge-pill badge-primary">{[n]}</span>
+                  </td>
+                  <td>
+                    <!-- this helps to delete the schedule -->
+                    <h4 class="clickable"><i ng-if="s.primary==false" class="bi bi-trash" ng-click="remove_schedule($index)"></i></h4>
+                  </td>
+                  <!-- to add a new schedule to the last index in the list, the button then appears on last item in the list -->
+                  <td ng-if="$index+1==schedules.length">
+                    <button ng-click="add_schedule()" type="button" class="btn btn-info btn-small">+</button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+            <!-- Submit changes to the list you have just made -->
+            <submit-confirm submit="submit()" btn-lbl="<i class='far fa-paper-plane'></i>&nbsp;Submit" pop-confirm></submit-confirm>
+        </div>
+    </div>
+</div>

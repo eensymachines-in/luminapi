@@ -27,6 +27,29 @@
                 defered.reject(err_message(response))
             })
         }
+        this.get_device_schedules = function(serial){
+            var defered  = $q.defer();
+            execute_request({
+                method :"GET",
+                url:"http://localhost/api/v1/devices/"+serial,
+                headers:{
+                    'Content-Type': "application/json",
+                },
+            }, defered)
+            return defered.promise;
+        }
+        this.patch_device_schedules = function(serial, schedules){
+            var defered  = $q.defer();
+            execute_request({
+                method :"PATCH",
+                url:"http://localhost/api/v1/devices/"+serial,
+                headers:{
+                    'Content-Type': "application/json",
+                },
+                data:JSON.stringify(schedules)
+            }, defered)
+            return defered.promise;
+        }
         // Queries the black list collection and gets all the devices from blacklist 
         this.get_device_blacklist = function(){
             var defered  = $q.defer();

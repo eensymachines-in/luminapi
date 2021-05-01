@@ -93,7 +93,7 @@ func main() {
 	// ++++++++++++ devices
 	devices := r.Group("/devices")
 	devices.Use(dbConnect())
-	devices.POST("/", devregPayload(), checkIfDeviceReg(false), HandlDevices)     // to register new devices
+	devices.POST("", devregPayload(), checkIfDeviceReg(false), HandlDevices)      // to register new devices
 	devices.DELETE("/:serial", checkIfDeviceReg(true), HandlDevice)               // single device un-register
 	devices.PATCH("/:serial", checkIfDeviceReg(true), mqttConnect(), HandlDevice) // schedules are updated here
 	devices.GET("/:serial", HandlDevice)                                          // GETting the schedules for a device

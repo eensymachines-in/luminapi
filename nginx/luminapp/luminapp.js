@@ -12,6 +12,10 @@
         .when("/:email/devices", {
             templateUrl:"/views/user-devices.html",
         })
+        // Schedules of devices
+        .when("/:serial/schedules", {
+            templateUrl:"/views/device-schedules.html",
+        })
         .when("/signup", {
             templateUrl:"/views/signup.html",
         })
