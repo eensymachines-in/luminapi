@@ -16,7 +16,11 @@
                   <th scope="row"> <h4><i ng-if="s.primary==true" class="bi bi-award"></i></h4></th>
                   <td>
                     <div class="form-group">
-                      <input ng-model="s.on" type="text" class="form-control" placeholder="Default input" id="onTime">
+                      <input ng-change="s.validate(s.on)"  
+                        ng-class="{false:'is-invalid'}[s.validate(s.on)==true]" 
+                        ng-model="s.on" type="text" 
+                        class="form-control" 
+                        placeholder="Default input" id="onTime">
                     </div>
                   </td>
                   <td>

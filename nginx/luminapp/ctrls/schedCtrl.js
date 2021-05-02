@@ -1,11 +1,18 @@
 (function(){
-    angular.module("luminapp").controller("schedCtrl", function($scope, $routeParams,srvApi, $route,srvRefactor, $rootScope){
+    angular.module("luminapp").controller("schedCtrl", function($scope, $routeParams,srvApi, $route,srvRefactor, $rootScope,schedTmPattern){
         $scope.wait = false;
         var origSchedules = JSON.stringify({}) //to start with its the imperession of an empty object
         $scope.$watch("schedules", function(after, before){
             if (after!==null && after!==undefined){
                 // also make a json string for later comparison
                 origSchedules = JSON.stringify(after)
+                // adding validation functions to the object
+                // functions are not stringified so it does not make a difference to the 'change' comparison
+                after.forEach(function(el, index){
+                    el.validate = function(val){
+                        return schedTmPattern.test(val);
+                    }
+                })
             }
         })
         // delegate the entire call implementation to boilerplate code

@@ -32,6 +32,15 @@
             templateUrl:"/views/embargo-devices.html",
         })
         .otherwise({redirectTo:"/"})
+
+        // /^([0-1]\d):([0-5]\d)\s{1}(?:AM|PM)?$/i
+        $provide.provider("schedTmPattern", function(){
+            this.$get = function(){
+                // this pattern can validate the time entered in the schedule table 
+                // since we are resorting to manual entry of time the validation is a bit necessary
+                return /^([0-1]\d):([0-5]\d)\s{1}(?:AM|PM)?$/i
+            }
+        })
         // serves up a regex that can help us test and identify a valid email id
         // this will be used by multiple controllers
         $provide.provider("emailPattern", function(){
