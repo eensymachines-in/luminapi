@@ -110,18 +110,25 @@ func HandlDevice(c *gin.Context) {
 		sojrs := scheduling.SliceOfJSONRelayState(payload)
 		scheds := []scheduling.Schedule{}
 		sojrs.ToSchedules(&scheds)
-
-		for _, s := range scheds {
+		conflicting := []scheduling.JSONRelayState{} // from the payload this will get the conflicting ones
+		for i, s := range scheds {
 			if s.Conflicts() > 0 {
 				// atleast one of the schedules has conflicts
-				// this has to be referred to the client
-				// Here we send back the payload with 400 status code
-				c.JSON(http.StatusBadRequest, payload)
-				log.WithFields(log.Fields{
-					"conflicting": s,
-				}).Warn("We have atleast one schedule that has conflicts")
-				return
+				// we will accumulate the conflicting schdules in on temp array
+				conflicting = append(conflicting, payload[i])
 			}
+		}
+		// accumulated conflicts are then sent back as payload
+		// TODO: test here from the client
+		if len(conflicting) > 0 {
+			c.JSON(http.StatusBadRequest, gin.H{
+				"message":   "One or more schedules have conflicts",
+				"conflicts": conflicting,
+			})
+			log.WithFields(log.Fields{
+				"conflicting": conflicting,
+			}).Warn("We have atleast one schedule that has conflicts")
+			return
 		}
 		// ++++++++++++ all the below code will run only if there arent any conflicting schedules
 		// Conflicts if found then would send back the schedules as is ErrInvalid

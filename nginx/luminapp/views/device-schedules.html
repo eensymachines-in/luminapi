@@ -1,8 +1,8 @@
-<div class="container" authorized-only lvl=0>
+<div class="container">
   <!-- this lets you view and modify the schedules the current device  -->
     <div class="row my-3">
         <div class="col-lg-8 offset-lg-2" ng-controller="schedCtrl">
-          <table class="table table-hover">
+          <table class="table table-hover my-3">
               <thead>
                 <tr>
                   <th scope="col">Type</th>
@@ -13,22 +13,20 @@
                 </tr>
               </thead>
               <tbody>
-                <tr class="" ng-repeat="s in schedules track by $index">
+                <tr ng-repeat="s in schedules track by $index">
                   <th scope="row"> <h4><i ng-if="s.primary==true" class="bi bi-award"></i></h4></th>
                   <td>
                     <div class="form-group">
                       <!-- on time input, change the on time here -->
                       <input class="form-control" placeholder="Default input" id="onTime"
-                      ng-change="s.validate(s.on)"  
-                      ng-class="{false:'is-invalid'}[s.validate(s.on)==true]" 
+                      ng-class="{false:'is-invalid'}[s.validate_on()==true]" 
                       ng-model="s.on" type="text">
                     </div>
                   </td>
                   <td>
                       <div class="form-group">
                         <input ng-model="s.off" 
-                        ng-change="s.validate(s.off)"  
-                        ng-class="{false:'is-invalid'}[s.validate(s.off)==true]"
+                        ng-class="{false:'is-invalid'}[s.validate_off()==true]"
                         type="text" class="form-control" 
                         placeholder="Default input" id="offTime">
                       </div>

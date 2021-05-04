@@ -11,12 +11,16 @@
                     m = response.data.message.split("\n")[0];
                     l=response.data.message.split("\n")[1];
                 }
+                if (response.data.conflicts !==undefined ){
+                    console.log(response.data.conflicts); // conflicts appear only when you are patching the schedules
+                }
             }
             return {
                 "status": response.status,
                 "statusText": response.statusText,
                 "message": m,
-                "logid": l
+                "logid": l,
+                "conflicts":response.data.conflicts || []
             }
         }
         var execute_request = async function (req, defered){
