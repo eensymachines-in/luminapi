@@ -50,7 +50,7 @@
                 // remember that this patch operation would also involve the data broker sending a push notification to the device on the ground
                 // console.log("we are about to submit changes to the schedules")
                 $scope.wait = true;
-                $scope.schedules.forEach(x=> delete x.conflicts) // incase there has been an conflicts error we dont want the extra properties to go along with the body
+                // $scope.schedules.forEach(x=> delete x.conflicts) // incase there has been an conflicts error we dont want the extra properties to go along with the body
                 srvApi.patch_device_schedules($routeParams.serial,$scope.schedules).then(function(){
                     console.log("Success.. we have patched the schedules on the cloud");
                     $scope.wait = false;
@@ -65,20 +65,14 @@
                     $scope.wait = false;
                     error.upon_exit = function(){
                         console.error(error);
-                        if (error.status ==400) {
-                            // incase of a bad request we add the conflicts to the respective schedules 
-                            console.log(error.conflicts)
-                            $scope.schedules.forEach(function(el,index){
-                                error.conflicts.forEach(function(c,idx){
-                                    if ((el.on == c.on) && (el.off == c.off)) {
-                                        // trying to match the schedules that are conflicting
-                                        el.conflicts =true;
-                                    }
-                                })
-                                
-                            })
-                            console.table($scope.schedules);
-                        }
+                        // $route.reload();
+                    }
+                    if (error.status ==400) {
+                        // incase of a bad request we add the conflicts to the respective schedules 
+                        console.log(error.conflicts);
+                        error.conflicts.forEach(function(el, index){
+                            error.message += "\n"+el.on +"-"+el.off;
+                        })
                     }
                     $rootScope.err = error;
                 })

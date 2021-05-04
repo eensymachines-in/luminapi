@@ -15,16 +15,17 @@
               <tbody>
                 <tr ng-repeat="s in schedules track by $index">
                   <th scope="row"> <h4><i ng-if="s.primary==true" class="bi bi-award"></i></h4></th>
-                  <td>
+                  <td >
                     <div class="form-group">
                       <!-- on time input, change the on time here -->
-                      <input class="form-control" placeholder="Default input" id="onTime"
-                      ng-class="{false:'is-invalid'}[s.validate_on()==true]" 
-                      ng-model="s.on" type="text">
+                      <input class="form-control thick-border" 
+                        placeholder="Default input" id="onTime"
+                        ng-class="{false:'is-invalid'}[s.validate_on()==true]" 
+                        ng-model="s.on" type="text">
                     </div>
                   </td>
                   <td>
-                      <div class="form-group">
+                      <div class="form-group thick-border">
                         <input ng-model="s.off" 
                         ng-class="{false:'is-invalid'}[s.validate_off()==true]"
                         type="text" class="form-control" 

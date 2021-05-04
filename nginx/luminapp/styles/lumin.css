@@ -4,3 +4,6 @@
 .clickable{
     cursor: pointer;
 }
+.thick-border{
+   border-width: 3px;
+}

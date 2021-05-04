@@ -1,5 +1,5 @@
 (function(){
-    angular.module("luminapp").factory("srvModal", function($rootScope,$timeout){
+    angular.module("luminapp").factory("srvModal", function($rootScope,$timeout,$sce){
         return function(scope){
             // this has all the generic stuff that modal require 
             this.link = function(elem, attrs,varName,title_text,body_text) {
@@ -15,7 +15,7 @@
                 }) 
                 scope.show = function(){
                     // $(mod).children('h5.modal-title').text(scope.err.status+" "+scope.err.statusText)
-                    mod.find('.modal-title').text(title_text())
+                    mod.find('.modal-title').text($sce.trustAsHtml(title_text()))
                     mod.find('.modal-body').text(body_text())
                     mod.modal('show')
                 }
