@@ -68,13 +68,13 @@
                 return {
                     auth : "http://auth.eensymachines.in",
                     // TODO: before moving to production change this uri
-                    lumin: "http://localhost/api/v1/devices"
+                    lumin: "http://lumin.eensymachines.in/api/v1/devices"
                 }
             }
         });
         // TODO: when moving to dev comment this.
-        // console.log = function(){};     
-        // console.table = function(){}; 
+        console.log = function(){};     
+        console.table = function(){}; 
 
     }).filter("nameFlt", function(){
         return function(name, limit){
