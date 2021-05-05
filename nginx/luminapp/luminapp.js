@@ -1,7 +1,9 @@
 (function(){
     angular.module("luminapp", ["ngRoute"]).config(function($routeProvider,$interpolateProvider,$provide){
+        // with GO Lang frameworks this can help to have angular a distinct space 
         $interpolateProvider.startSymbol("{[")
         $interpolateProvider.endSymbol("]}")
+       
         $routeProvider
         .when("/", {
             templateUrl:"/views/splash.html"
@@ -65,10 +67,15 @@
             this.$get = function(){
                 return {
                     auth : "http://auth.eensymachines.in",
+                    // TODO: before moving to production change this uri
                     lumin: "http://localhost/api/v1/devices"
                 }
             }
-        })
+        });
+        // TODO: when moving to dev comment this.
+        // console.log = function(){};     
+        // console.table = function(){}; 
+
     }).filter("nameFlt", function(){
         return function(name, limit){
             if (name.length> limit){

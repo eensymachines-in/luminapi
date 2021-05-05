@@ -1,10 +1,13 @@
 (function(){
+    /*schedCtrl:  helps to control a list of schedules [{on:"",off:"",primary:true,ids:["IN1"]}] of a single device
+    uuid of the device is from the $routeParams.serial
+    A deep watch on the schedules will help to extend the object for the validation functions
+    For the first change it also records a comparison JSON string. This when compare to the later state of schedules will let us know if anything has changed*/ 
     angular.module("luminapp").controller("schedCtrl", function($scope, $routeParams,srvApi, $route,srvRefactor, $rootScope,schedTmPattern){
-        $scope.wait = false;
+        $scope.wait = false; //used to show/hide the ribbon progress bar
         var origSchedules = JSON.stringify({}) //to start with its the imperession of an empty object
         $scope.$watch("schedules", function(after, before){
             if (after!==null && after!==undefined){
-                console.log("The schedules have changed..");
                 console.log(origSchedules == JSON.stringify({}));
                 // also make a json string for later comparison
                 if (origSchedules == JSON.stringify({})) {
@@ -12,36 +15,28 @@
                     // all the consequent changes in schedules object will not be stringified
                     // to detect any changes made we need to compare the after-change schedules list to first one 
                     // schedules list can change when you add / remove schedules as well.
-                    console.log("storing away origSchedules");
                     origSchedules = JSON.stringify(after)
                 }
                 // adding validation functions to the object
                 // functions are not stringified so it does not make a difference to the 'change' comparison
                 after.forEach(function(el, index){
                     el.validate_on = function(){
-                        console.log("On prop being validated..");
                         return schedTmPattern.test(el.on);
                     }
                     el.validate_off = function(){
-                        console.log("Off prop being validated..");
                         return schedTmPattern.test(el.off);
                     }
                 })
             }
         }, true) // here we are attempting to deep watch an array so that when items are added or removed we can detect that 
-        // delegate the entire call implementation to boilerplate code
-        // handles the implementation at one place
+        
+        // GET the schedules list from api 
+        // If it fails to do so, it would result in an error modal
         srvRefactor($scope).get_list_from_api(function(){
             return srvApi.get_device_schedules($routeParams.serial)
         }, function(){},function(){
             console.error("Failed to get device schedules");
-        }, "schedules")
-        // srvApi.get_device_schedules($routeParams.serial).then(function(data){
-        //     console.log("We have received the schedules for the device: " +$routeParams.serial)
-        //     console.table(data)
-        //     $scope.schedules = data;
-        // }) //TODO: implement the error function too .. 
-        
+        }, "schedules") 
         $scope.submit = function(){
             // console.log(JSON.stringify($scope.schedules))
             // console.log(origSchedules)
@@ -54,9 +49,9 @@
                 srvApi.patch_device_schedules($routeParams.serial,$scope.schedules).then(function(){
                     console.log("Success.. we have patched the schedules on the cloud");
                     $scope.wait = false;
-                    $rootScope.err = {
+                    $rootScope.success = {
                         title :"Done!",
-                        message:"Patched the schedules for the device, If your device was online it would have been notified of the changes",
+                        message:"Schedules updated! - If your device was online, it would have received this change",
                         upon_exit: function(){
                             $route.reload();
                         }
@@ -65,7 +60,7 @@
                     $scope.wait = false;
                     error.upon_exit = function(){
                         console.error(error);
-                        // $route.reload();
+                        // We wouldnt want the reload since then the changes (although invalid) will not reflect back
                     }
                     if (error.status ==400) {
                         // incase of a bad request we add the conflicts to the respective schedules 
