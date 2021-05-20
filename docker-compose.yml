@@ -25,6 +25,8 @@ services:
     image: mongo:4.2-bionic
     ports:
         - 37017:27017
+    volumes: 
+      - "/data/db":"/data/db"
     tty: true
     stdin_open: true
     container_name: authapi_mongo
