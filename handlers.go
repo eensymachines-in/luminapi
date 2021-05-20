@@ -155,3 +155,52 @@ func HandlDevice(c *gin.Context) {
 		return
 	}
 }
+
+type LogDump struct {
+	Data []map[string]interface{} `json:"logdata"`
+}
+
+// HndlDeviceLogs: can handle logs CRUD specific to the device
+func HndlDeviceLogs() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		serial := c.Param("serial")
+		ld := &LogDump{
+			Data: []map[string]interface{}{},
+		}
+		// Getting the database connection
+		val, exists := c.Get("devreg")
+		if !exists {
+			errx.DigestErr(errx.NewErr(errx.ErrConnFailed{}, nil, "failed connection to database", "HandlDevices/dbConnect"), c)
+			return
+		}
+		devreg, _ := val.(*core.DevRegsColl)
+		val, _ = c.Get("db_close")
+		dbClose := val.(func())
+		defer dbClose()
+		if c.Request.Method == "POST" {
+			log.Infof("Device log, POST - adding new log dump for device: %s", serial)
+			if err := c.ShouldBindJSON(ld); err != nil {
+				log.Error("Failed to bind json log dump")
+				errx.DigestErr(errx.NewErr(errx.ErrJSONBind{}, err, "failed to read new schedules", "HandlDevice/ShouldBindJSON"), c)
+				return
+			}
+			if errx.DigestErr(devreg.AppendDeviceLog(serial, ld.Data), c) != 0 {
+				return
+			}
+			c.AbortWithStatus(http.StatusOK)
+			return
+		} else if c.Request.Method == "GET" {
+			qry := c.Query("q")
+			/* qry=info/warning/error
+			device logs are for a particular device serial filtered for the level
+			if no filter then all the logs will just be sent back
+			*/
+			result := []map[string]string{}
+			if errx.DigestErr(devreg.GetDeviceLogs(serial, qry, &result), c) != 0 {
+				return
+			}
+			c.JSON(http.StatusOK, result)
+			return
+		}
+	}
+}

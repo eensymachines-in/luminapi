@@ -90,6 +90,11 @@ func main() {
 	/*Admin related tasks here under one group. Check the nginx conf this has been appropriately */
 	grpAdmin := r.Group("/admin")
 	grpAdmin.GET("/logs", HndlLogs(os.Getenv("LOGF")))
+	// Device specific logs can be posted here
+	logs := r.Group("/logs")
+	logs.Use(dbConnect())
+	logs.GET("/:serial", HndlDeviceLogs())
+	logs.POST("/:serial", HndlDeviceLogs())
 	// ++++++++++++ devices
 	devices := r.Group("/devices")
 	devices.Use(dbConnect())

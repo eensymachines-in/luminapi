@@ -4,6 +4,7 @@ package core
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/eensymachines-in/errx"
 	"github.com/eensymachines-in/scheduling"
@@ -30,6 +31,81 @@ type DevRegsColl struct {
 		log.Info(*s)
 	}
 */
+
+func (drc *DevRegsColl) GetDeviceLogs(serial string, flt string, result *[]map[string]string) error {
+	// Checking to if the device is registered
+	yes, err := drc.IsRegistered(serial)
+	if err != nil {
+		return errx.NewErr(&errx.ErrQuery{}, err, "Failed to check if the device is registered", "DevRegsColl/AppendDeviceLog/IsRegistered")
+	}
+	if !yes {
+		return errx.NewErr(&errx.ErrNotFound{}, err, "No schedules for unregistered devices", "DevRegsColl/GetSchedules")
+	}
+	// Query to get the logs of device
+	match_serial := bson.M{"$match": bson.M{"serial": serial}}
+	stage_unwind := bson.M{"$unwind": bson.M{"path": "$logs"}}
+	stage_project := bson.M{"$project": bson.M{"logs": 1, "serial": 1, "_id": 0}}
+	sort_time := bson.M{"$sort": bson.M{"time": 1}} // time sorted logs
+	matchQ := bson.M{}
+	if flt != "" {
+		matchQ = bson.M{"logs.level": flt}
+	}
+	match_lvl := bson.M{"$match": matchQ} // filter on the level of log
+	qResult := []struct {
+		Logs map[string]string `bson:"logs"`
+	}{}
+	if err := drc.Pipe([]bson.M{match_serial, stage_unwind, stage_project, sort_time, match_lvl}).All(&qResult); err != nil {
+		return errx.NewErr(&errx.ErrQuery{}, err, fmt.Sprintf("Failed to get device logs for  %s", serial), "DevRegsColl/GetDeviceLogs/Pipe")
+	}
+	*result = []map[string]string{} // empty result
+	for _, l := range qResult {
+		*result = append(*result, l.Logs) //transfering the log items to the result
+	}
+	return nil
+}
+
+// AppendDeviceLog : appends the log blob to device registration
+func (drc *DevRegsColl) AppendDeviceLog(serial string, logs []map[string]interface{}) error {
+	yes, err := drc.IsRegistered(serial)
+	if err != nil {
+		return errx.NewErr(&errx.ErrQuery{}, err, "Failed to check if the device is registered", "DevRegsColl/AppendDeviceLog/IsRegistered")
+	}
+	if !yes {
+		return errx.NewErr(&errx.ErrNotFound{}, err, "No schedules for unregistered devices", "DevRegsColl/GetSchedules")
+	}
+	// logs can quickly build up space and hence can be taxing on cloud machine
+	// given that we want multiple devices as such we need to figure out a way to clear the logs as and when the device tries to push more
+	// each time the device uploads the data, old logs can be cleared out
+	match_serial := bson.M{"$match": bson.M{"serial": serial}}
+	stage_unwind := bson.M{"$unwind": bson.M{"path": "$logs"}}
+	stage_project := bson.M{"$project": bson.M{"logs": 1, "serial": 1, "_id": 0}}
+	// at this stage we have all the logs for a single device unwound
+	// result also has only select fields in them
+	// RFC3339 is compatible format with mongo queries
+	time_limit := bson.M{"$match": bson.M{"logs.time": bson.M{"$gte": time.Now().AddDate(0, -1, 0).Format(time.RFC3339)}}}
+	// this will induce a time ceiling, all logs of a month always in the database
+	sort_time := bson.M{"$sort": bson.M{"time": 1}}
+	grp_logs := bson.M{"$group": bson.M{"_id": "$serial", "logs": bson.M{"$push": "$logs"}}}
+	// sorted ascending by time the logs are grouped back into an array
+	result := struct {
+		Serial string              `bson:"_id"`
+		Logs   []map[string]string `bson:"logs"`
+	}{} //expected result data shape - since we have grp query, result expected is only one
+
+	if drc.Pipe([]bson.M{match_serial, stage_unwind, stage_project, time_limit, sort_time, grp_logs}).One(&result) != nil {
+		return errx.NewErr(&errx.ErrQuery{}, err, fmt.Sprintf("Failed to get old logs for the device %s", serial), "DevRegsColl/AppendDeviceLog/Pipe")
+	}
+	// We then update the device registration for the logs
+	if drc.Update(bson.M{"serial": serial}, bson.M{"$set": bson.M{"logs": result.Logs}}) != nil {
+		return errx.NewErr(&errx.ErrQuery{}, err, fmt.Sprintf("Failed to trim/limit logs for device %s", serial), "DevRegsColl/AppendDeviceLog/Update")
+	}
+	if len(logs) > 0 {
+		if drc.Update(bson.M{"serial": serial}, bson.M{"$push": bson.M{"logs": bson.M{"$each": logs}}}) != nil {
+			return errx.NewErr(&errx.ErrQuery{}, err, fmt.Sprintf("Failed to push logs for device %s", serial), "DevRegsColl/AppendDeviceLog/Update")
+		}
+	}
+	return nil
+}
 func (drc *DevRegsColl) GetSchedules(serial string, result *[]scheduling.JSONRelayState) error {
 	yes, err := drc.IsRegistered(serial)
 	if err != nil {
