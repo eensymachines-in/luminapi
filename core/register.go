@@ -87,16 +87,16 @@ func (drc *DevRegsColl) AppendDeviceLog(serial string, logs []map[string]interfa
 	sort_time := bson.M{"$sort": bson.M{"time": 1}}
 	grp_logs := bson.M{"$group": bson.M{"_id": "$serial", "logs": bson.M{"$push": "$logs"}}}
 	// sorted ascending by time the logs are grouped back into an array
-	result := struct {
+	result := []struct {
 		Serial string              `bson:"_id"`
 		Logs   []map[string]string `bson:"logs"`
 	}{} //expected result data shape - since we have grp query, result expected is only one
-
-	if drc.Pipe([]bson.M{match_serial, stage_unwind, stage_project, time_limit, sort_time, grp_logs}).One(&result) != nil {
+	// Incase there are no logs for the device this statement would fail
+	if drc.Pipe([]bson.M{match_serial, stage_unwind, stage_project, time_limit, sort_time, grp_logs}).All(&result) != nil {
 		return errx.NewErr(&errx.ErrQuery{}, err, fmt.Sprintf("Failed to get old logs for the device %s", serial), "DevRegsColl/AppendDeviceLog/Pipe")
 	}
 	// We then update the device registration for the logs
-	if drc.Update(bson.M{"serial": serial}, bson.M{"$set": bson.M{"logs": result.Logs}}) != nil {
+	if drc.Update(bson.M{"serial": serial}, bson.M{"$set": bson.M{"logs": result[0].Logs}}) != nil {
 		return errx.NewErr(&errx.ErrQuery{}, err, fmt.Sprintf("Failed to trim/limit logs for device %s", serial), "DevRegsColl/AppendDeviceLog/Update")
 	}
 	if len(logs) > 0 {
