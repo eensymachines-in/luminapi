@@ -95,10 +95,12 @@ func (drc *DevRegsColl) AppendDeviceLog(serial string, logs []map[string]interfa
 	if drc.Pipe([]bson.M{match_serial, stage_unwind, stage_project, time_limit, sort_time, grp_logs}).All(&result) != nil {
 		return errx.NewErr(&errx.ErrQuery{}, err, fmt.Sprintf("Failed to get old logs for the device %s", serial), "DevRegsColl/AppendDeviceLog/Pipe")
 	}
-	// We then update the device registration for the logs
-	if drc.Update(bson.M{"serial": serial}, bson.M{"$set": bson.M{"logs": result[0].Logs}}) != nil {
-		return errx.NewErr(&errx.ErrQuery{}, err, fmt.Sprintf("Failed to trim/limit logs for device %s", serial), "DevRegsColl/AppendDeviceLog/Update")
+	if len(result) > 0 {
+		if drc.Update(bson.M{"serial": serial}, bson.M{"$set": bson.M{"logs": result[0].Logs}}) != nil {
+			return errx.NewErr(&errx.ErrQuery{}, err, fmt.Sprintf("Failed to trim/limit logs for device %s", serial), "DevRegsColl/AppendDeviceLog/Update")
+		}
 	}
+	// We then update the device registration for the logs
 	if len(logs) > 0 {
 		if drc.Update(bson.M{"serial": serial}, bson.M{"$push": bson.M{"logs": bson.M{"$each": logs}}}) != nil {
 			return errx.NewErr(&errx.ErrQuery{}, err, fmt.Sprintf("Failed to push logs for device %s", serial), "DevRegsColl/AppendDeviceLog/Update")
