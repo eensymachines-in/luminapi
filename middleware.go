@@ -52,18 +52,39 @@ func dbConnect() gin.HandlerFunc {
 	}
 }
 
-// devregPayload : this binds the incoming dev reg payload and injects the same to the context
-func devregPayload() gin.HandlerFunc {
+// devLogPayload : binds the request payload to well defined type here
+// expects a devlog payload to be uploaded, binds it to the context in DevLogPayload data shape
+func devLogPayload() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		payload := &core.DevLogPayload{}
+		if c.ShouldBindJSON(payload) != nil {
+			payload.SerialID = "<device serial id>"
+			payload.LogData = []map[string]interface{}{}
+			errx.DigestErr(errx.NewErr(&errx.ErrJSONBind{}, nil, fmt.Sprintf("failed to read the device logs, Expected format : %v", payload), "devLogPayload/ShouldBindJSON"), c)
+			return
+		}
+		log.WithFields(log.Fields{
+			"payload": payload,
+		}).Info("Received log payload")
+		c.Set("dev_payload", payload)
+	}
+}
+
+// devRegPayload : this binds the incoming dev reg payload and injects the same to the context
+// expects a registration payload from the client, binds it to the context in DevRegHttpPayload data shape
+func devRegPayload() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		payload := &core.DevRegHttpPayload{}
 		if c.ShouldBindJSON(payload) != nil {
-			errx.DigestErr(errx.NewErr(&errx.ErrJSONBind{}, nil, "failed to read the device registration", "devregPayload/ShouldBindJSON"), c)
+			payload.SerialID = "<device serial id>"
+			payload.RelayIDs = []string{"IN1", "IN2", "IN3"}
+			errx.DigestErr(errx.NewErr(&errx.ErrJSONBind{}, nil, fmt.Sprintf("failed to read the device registration, Expected format : %v", payload), "devregPayload/ShouldBindJSON"), c)
 			return
 		}
 		log.WithFields(log.Fields{
 			"payload": payload,
 		}).Info("Received payload")
-		c.Set("devregpayload", payload)
+		c.Set("dev_payload", payload)
 	}
 }
 
@@ -85,9 +106,9 @@ func checkIfDeviceReg(abortIfNot bool) gin.HandlerFunc {
 			serial = c.Param("serial")
 		} else {
 			// Within the context of post request the serial number is in the payload and not in the param
-			val, _ = c.Get("devregpayload") // has to be preceeded with devregPayload else will not get this payload
-			payload, _ := val.(*core.DevRegHttpPayload)
-			serial = payload.Serial
+			val, _ = c.Get("dev_payload") // has to be preceeded with devregPayload else will not get this payload
+			pl, _ := val.(core.Payload)
+			serial = pl.Serial()
 		}
 		yes, err := devreg.IsRegistered(serial)
 		if errx.DigestErr(err, c) != 0 {
@@ -107,6 +128,7 @@ func checkIfDeviceReg(abortIfNot bool) gin.HandlerFunc {
 		}
 		// We wouldnt want to close the database connection in this case
 		// there are furtther handlers in line
+		// case when whatever the registration state the handler is not to abort
 		c.Set("isreg", yes)
 	}
 }

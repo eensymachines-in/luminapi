@@ -56,8 +56,8 @@ func HandlDevices(c *gin.Context) {
 	if c.Request.Method == "POST" {
 		// will check if the device is registered , if it already is then would return 200 ok
 		// else shall register and then send ok
-		val, _ = c.Get("devregpayload")
-		payload, _ := val.(*core.DevRegHttpPayload)
+		val, _ = c.Get("dev_payload")
+		payload, _ := val.(core.Payload)
 		val, _ = c.Get("isreg")
 		yes, _ := val.(bool)
 		if yes {
@@ -68,7 +68,7 @@ func HandlDevices(c *gin.Context) {
 		}
 		// this in case the device is not registered
 		registration := &core.DevReg{}
-		if errx.DigestErr(devreg.Register(payload.Serial, payload.RelayIDs, registration), c) != 0 {
+		if errx.DigestErr(devreg.Register(payload.Serial(), payload.(core.RegPayload).Relays(), registration), c) != 0 {
 			return
 		}
 		// when device registers itself newly the response also has schedules
@@ -163,10 +163,6 @@ type LogDump struct {
 // HndlDeviceLogs: can handle logs CRUD specific to the device
 func HndlDeviceLogs() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		serial := c.Param("serial")
-		ld := &LogDump{
-			Data: []map[string]interface{}{},
-		}
 		// Getting the database connection
 		val, exists := c.Get("devreg")
 		if !exists {
@@ -177,19 +173,17 @@ func HndlDeviceLogs() gin.HandlerFunc {
 		val, _ = c.Get("db_close")
 		dbClose := val.(func())
 		defer dbClose()
+		// Now that we get the payload bound from middleware
+		val, _ = c.Get("dev_payload")
+		pl, _ := val.(core.Payload)
 		if c.Request.Method == "POST" {
-			log.Infof("Device log, POST - adding new log dump for device: %s", serial)
-			if err := c.ShouldBindJSON(ld); err != nil {
-				log.Error("Failed to bind json log dump")
-				errx.DigestErr(errx.NewErr(errx.ErrJSONBind{}, err, "failed to read new schedules", "HandlDevice/ShouldBindJSON"), c)
-				return
-			}
-			if errx.DigestErr(devreg.AppendDeviceLog(serial, ld.Data), c) != 0 {
+			if errx.DigestErr(devreg.AppendDeviceLog(pl.Serial(), pl.(core.LogPayload).Logs()), c) != 0 {
 				return
 			}
 			c.AbortWithStatus(http.StatusOK)
 			return
 		} else if c.Request.Method == "GET" {
+			serial := c.Param("serial")
 			qry := c.Query("q")
 			/* qry=info/warning/error
 			device logs are for a particular device serial filtered for the level

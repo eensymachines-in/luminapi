@@ -20,12 +20,31 @@ Content-Type: application/json
 }
 
 ###
+# Getting the device registration details just submitted 
+GET  http://localhost/api/v1/devices/000000007920365c HTTP/1.1
 
-POST http://localhost/api/v1/logs/000000007920365b HTTP/1.1
+###
+# Expect 200 OK and the device registration deleted 
+DELETE  http://localhost/api/v1/devices/000000007920365c HTTP/1.1
+
+
+### ------------- Now for unregistered devices -----------
+###
+GET  http://localhost/api/v1/devices/000000007920365y HTTP/1.1
+
+###
+# this request should fail since the device isnt registered 
+DELETE  http://localhost/api/v1/devices/000000007920365y HTTP/1.1
+
+
+### ---------- Now for logs of the devices 
+
+POST http://localhost/api/v1/logs HTTP/1.1
 Content-Type: application/json
 
-{"logdata":
-    [{"level":"info","msg":"Verbose logging","time":"2021-05-16T09:07:57+05:30"}, 
+{
+    "serial":"000000007920365c",
+    "logdata":[{"level":"info","msg":"Verbose logging","time":"2021-05-16T09:07:57+05:30"}, 
     {"flog":true,"level":"info","msg":"Starting autolumin module","time":"2021-05-16T09:07:57+05:30","verbose":true}, 
     {"level":"info","msg":"Relayboard server: initializing...","time":"2021-05-16T09:07:57+05:30"}, 
     {"level":"info","msg":"Starting SrvRelay..","status":{"IN1":0,"IN2":0,"IN3":0,"IN4":0},"time":"2021-05-16T09:07:57+05:30"}, 
@@ -33,15 +52,34 @@ Content-Type: application/json
     {"flog":true,"level":"info","msg":"Starting autolumin module","time":"2021-05-16T09:07:59+05:30","verbose":true}, 
     {"level":"info","msg":"Verbose logging","time":"2021-05-16T09:08:00+05:30"}, 
     {"level":"info","msg":"Now authenticating the device...","time":"2021-05-16T09:08:00+05:30"}, 
-    {"level":"info","lock":false,"msg":"Device authenticated","serial":"000000007920365b","time":"2021-05-16T09:08:01+05:30","user":"kneerunjun@gmail.com"}, {"level":"info","msg":"Now trying to verify registration of the device with luminapi...","time":"2021-05-16T09:08:01+05:30"}, {"level":"info","msg":"Done registering the device withg luminapi","time":"2021-05-16T09:08:02+05:30"}, {"fields.msg":"{\"auth\":true,\"reg\":true,\"serial\":\"000000007920365b\"}","level":"info","msg":"Now sending to socket","time":"2021-05-16T09:08:02+05:30"}, {"level":"warning","msg":"srvauth: now closing service..","time":"2021-05-16T09:08:02+05:30"}, {"level":"info","msg":"Now setting up the mqtt listener loop..","serial":"000000007920365b","time":"2021-05-16T09:08:02+05:30"}, {"level":"debug","msg":"Starting: 07:00 PM - 09:15 PM [IN1 IN2 IN3 IN4] [IN1 IN2 IN3 IN4]","time":"2021-05-16T09:08:02+05:30"}, {"level":"debug","msg":"Near: 09:15 PM, [IN1 IN2 IN3 IN4] Far: 07:00 PM, [IN1 IN2 IN3 IN4] Pre: 0 Post: 35518\n","time":"2021-05-16T09:08:02+05:30"}, {"level":"debug","msg":"map[IN1:0 IN2:0 IN3:0 IN4:0]","time":"2021-05-16T09:08:02+05:30"}, {"level":"info","msg":"Subscribed to topic: 000000007920365b/schedules","time":"2021-05-16T09:08:02+05:30","topic":"000000007920365b/schedules"}, {"level":"warning","msg":"System system interruption","time":"2021-05-16T09:08:06+05:30"}, {"level":"warning","msg":"Now closing all tasks..","time":"2021-05-16T09:08:06+05:30"}, {"level":"warning","msg":"System system interruption","time":"2021-05-16T09:08:17+05:30"}, {"level":"warning","msg":"Now closing all tasks..","time":"2021-05-16T09:08:17+05:30"}, {"level":"warning","msg":"SrvRelay: Interrupt!, now quitting..","time":"2021-05-16T09:08:18+05:30"}, {"level":"warning","msg":"Now shutting down the RelayBoardOLED ..","time":"2021-05-16T09:08:18+05:30"}, {"level":"warning","msg":"Now shutting down the relay IN1 ..","time":"2021-05-16T09:08:18+05:30"}, {"level":"warning","msg":"Now shutting down the relay IN2 ..","time":"2021-05-16T09:08:18+05:30"}, {"level":"warning","msg":"Now shutting down the relay IN3 ..","time":"2021-05-16T09:08:18+05:30"}, {"level":"warning","msg":"Now shutting down the relay IN4 ..","time":"2021-05-16T09:08:18+05:30"}, {"level":"warning","msg":"Relayboard server: quitting...","time":"2021-05-16T09:08:18+05:30"}]
+    {"level":"info","lock":false,"msg":"Device authenticated","serial":"000000007920365b","time":"2021-05-16T09:08:01+05:30","user":"kneerunjun@gmail.com"}, 
+    {"level":"info","msg":"Now trying to verify registration of the device with luminapi...","time":"2021-05-16T09:08:01+05:30"}, 
+    {"level":"info","msg":"Done registering the device withg luminapi","time":"2021-05-16T09:08:02+05:30"}, 
+    {"fields.msg":"{\"auth\":true,\"reg\":true,\"serial\":\"000000007920365b\"}","level":"info","msg":"Now sending to socket","time":"2021-05-16T09:08:02+05:30"}, 
+    {"level":"warning","msg":"srvauth: now closing service..","time":"2021-05-16T09:08:02+05:30"}, 
+    {"level":"info","msg":"Now setting up the mqtt listener loop..","serial":"000000007920365b","time":"2021-05-16T09:08:02+05:30"}, 
+    {"level":"debug","msg":"Starting: 07:00 PM - 09:15 PM [IN1 IN2 IN3 IN4] [IN1 IN2 IN3 IN4]","time":"2021-05-16T09:08:02+05:30"}, 
+    {"level":"debug","msg":"Near: 09:15 PM, [IN1 IN2 IN3 IN4] Far: 07:00 PM, [IN1 IN2 IN3 IN4] Pre: 0 Post: 35518\n","time":"2021-05-16T09:08:02+05:30"}, 
+    {"level":"debug","msg":"map[IN1:0 IN2:0 IN3:0 IN4:0]","time":"2021-05-16T09:08:02+05:30"}, 
+    {"level":"info","msg":"Subscribed to topic: 000000007920365b/schedules","time":"2021-05-16T09:08:02+05:30","topic":"000000007920365b/schedules"}, 
+    {"level":"warning","msg":"System system interruption","time":"2021-05-16T09:08:06+05:30"}, 
+    {"level":"warning","msg":"Now closing all tasks..","time":"2021-05-16T09:08:06+05:30"}, 
+    {"level":"warning","msg":"System system interruption","time":"2021-05-16T09:08:17+05:30"}, 
+    {"level":"warning","msg":"Now closing all tasks..","time":"2021-05-16T09:08:17+05:30"}, 
+    {"level":"warning","msg":"SrvRelay: Interrupt!, now quitting..","time":"2021-05-16T09:08:18+05:30"}, 
+    {"level":"warning","msg":"Now shutting down the RelayBoardOLED ..","time":"2021-05-16T09:08:18+05:30"}, 
+    {"level":"warning","msg":"Now shutting down the relay IN1 ..","time":"2021-05-16T09:08:18+05:30"}, 
+    {"level":"warning","msg":"Now shutting down the relay IN2 ..","time":"2021-05-16T09:08:18+05:30"}, 
+    {"level":"warning","msg":"Now shutting down the relay IN3 ..","time":"2021-05-16T09:08:18+05:30"}, 
+    {"level":"warning","msg":"Now shutting down the relay IN4 ..","time":"2021-05-16T09:08:18+05:30"}, 
+    {"level":"warning","msg":"Relayboard server: quitting...","time":"2021-05-16T09:08:18+05:30"}]
 }
 
+###
+GET http://localhost/api/v1/logs/000000007920365c HTTP/1.1
 
 ###
-GET http://localhost/api/v1/logs/000000007920365b HTTP/1.1
+GET http://localhost/api/v1/logs/000000007920365c?q=warning HTTP/1.1
 
 ###
-GET http://localhost/api/v1/logs/000000007920365b?q=warning HTTP/1.1
-
-###
-GET http://localhost/api/v1/logs/000000007920365b?q=info HTTP/1.1
+GET http://localhost/api/v1/logs/000000007920365c?q=info HTTP/1.1
