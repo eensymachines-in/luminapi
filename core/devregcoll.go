@@ -1,5 +1,3 @@
-/*A package that defines the core buisness logic for luminapi
-A device when registered with the database, stores away the schedules against a unique serial number of the device.This database forms the single source of truth - modified by the user and followed by the device. Core package helps to CRUD this same datamodel. This package is expected to be used by api handlers ontop*/
 package core
 
 import (
@@ -20,18 +18,6 @@ type DevRegsColl struct {
 	*mgo.Collection
 }
 
-// GETs the schedules for the device serial
-// Filters the device using the serial, sendsback a slice of scheduling.JSONRelayState, Errors when device is not registered or query fails
-/*	result := []*scheduling.JSONRelayState{}
-	serial := 'random45354'
-	if err:=drc.GetSchedules(serial, &result); err! =nil{
-		log.Errorf("Failed to get schedules for the device %s: %s", serial, err)
-	}
-	for _,s := range result{
-		log.Info(*s)
-	}
-*/
-
 func (drc *DevRegsColl) GetDeviceLogs(serial string, flt string, result *[]map[string]string) error {
 	// Checking to if the device is registered
 	yes, err := drc.IsRegistered(serial)
@@ -44,10 +30,12 @@ func (drc *DevRegsColl) GetDeviceLogs(serial string, flt string, result *[]map[s
 	// Query to get the logs of device
 	match_serial := bson.M{"$match": bson.M{"serial": serial}}
 	stage_unwind := bson.M{"$unwind": bson.M{"path": "$logs"}}
+	// Unwinding the logs for the serial - this will be in [{serial:"", logs:map[string]interface{}}...]
 	stage_project := bson.M{"$project": bson.M{"logs": 1, "serial": 1, "_id": 0}}
 	sort_time := bson.M{"$sort": bson.M{"time": 1}} // time sorted logs
 	matchQ := bson.M{}
 	if flt != "" {
+		// this filter on the level of the logs is optional
 		matchQ = bson.M{"logs.level": flt}
 	}
 	match_lvl := bson.M{"$match": matchQ} // filter on the level of log
@@ -120,7 +108,7 @@ func (drc *DevRegsColl) GetSchedules(serial string, result *[]scheduling.JSONRel
 	if drc.Find(bson.M{"serial": serial}).One(reg) != nil {
 		return errx.NewErr(&errx.ErrQuery{}, err, "Failed operation to get device schedules", "DevRegsColl/GetSchedules/One")
 	}
-	*result = reg.Schedules
+	*result = reg.Scheds
 	return nil
 }
 
@@ -139,16 +127,23 @@ func (drc *DevRegsColl) IsRegistered(serial string) (bool, error) {
 // Registers a new device and sends back the default schedule
 // error in case the register was unsuccessful or the inputs are invalid
 // Inputs required are serial of the device and the relay ids
-func (drc *DevRegsColl) Register(serial string, rlyIDS []string, result *DevReg) error {
-	if serial == "" || len(rlyIDS) == 0 {
+func (drc *DevRegsColl) Register(serial string, rmaps []IRelayMap, result *DevReg) error {
+	if serial == "" || len(rmaps) == 0 {
 		// simple error check - 400 bad request
 		return errx.NewErr(&errx.ErrInvalid{}, nil, "Serial of devices is invalid, or there arent enough relay definitions", "DevRegsColl")
 	}
 	// When the server sets it would add the defaul timing to the relay ids the client tells it to
 	// When defaulting the server will not add any patch schedules
-	*result = DevReg{Serial: serial, Schedules: []scheduling.JSONRelayState{
-		{ON: "06:30 PM", OFF: "06:30 AM", IDs: rlyIDS, Primary: true},
-	}}
+	ids := []string{}
+	RelayIdsFromMaps(rmaps, &ids)
+	drmp := &DevRelayMap{}
+	sdrmp := []*DevRelayMap{}
+
+	*result = DevReg{SID: serial,
+		Scheds: []scheduling.JSONRelayState{{ON: "06:30 PM", OFF: "06:30 AM", IDs: ids, Primary: true}},
+		RMaps:  CollIRelayMap(rmaps).CastEachTo(sdrmp, drmp.CastFromIRelayMap).([]*DevRelayMap),
+		LData:  []map[string]interface{}{},
+	}
 	// default schedule gets pushed to the collection
 	if err := drc.Insert(result); err != nil {
 		return errx.NewErr(&errx.ErrQuery{}, err, "Failed operation to add device registration", "DevRegsColl/Register")
