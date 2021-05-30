@@ -1,3 +1,5 @@
+// +build drop
+
 package core
 
 import (
