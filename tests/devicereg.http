@@ -1,14 +1,4 @@
 
-POST http://auth.eensymachines.in/devices HTTP/1.1
-Content-Type: application/json
-
-{
-    "user":"kneerunjun@gmail.com",
-    "hw":"BCM2835",
-    "serial":"000000007920365c",
-    "model":"Raspberry Pi 3 Model B Rev 1.2"
-}
-
 #### 
 # since the device also needs to be registered 
 POST http://localhost/api/v1/devices HTTP/1.1
@@ -16,7 +6,12 @@ Content-Type: application/json
 
 {
     "serial":"000000007920365c",
-    "rlys":["IN1","IN2","IN3","IN4"]
+    "rmaps":[
+        {"rid":"IN1", "defn":"First floor, corridor, basement"},
+        {"rid":"IN2", "defn":"Floor 4, 9, 6, 5"},
+        {"rid":"IN3", "defn":"Floor 10, 3, 7, 1"},
+        {"rid":"IN4", "defn":"Floor 12, 8, 10, 2"}
+    ]
 }
 
 ###
@@ -43,8 +38,8 @@ POST http://localhost/api/v1/logs HTTP/1.1
 Content-Type: application/json
 
 {
-    "serial":"000000007920365y",
-    "logdata":[{"level":"info","msg":"Verbose logging","time":"2021-05-16T09:07:57+05:30"}, 
+    "serial":"000000007920365c",
+    "logs":[{"level":"info","msg":"Verbose logging","time":"2021-05-16T09:07:57+05:30"}, 
     {"flog":true,"level":"info","msg":"Starting autolumin module","time":"2021-05-16T09:07:57+05:30","verbose":true}, 
     {"level":"info","msg":"Relayboard server: initializing...","time":"2021-05-16T09:07:57+05:30"}, 
     {"level":"info","msg":"Starting SrvRelay..","status":{"IN1":0,"IN2":0,"IN3":0,"IN4":0},"time":"2021-05-16T09:07:57+05:30"}, 
@@ -76,7 +71,7 @@ Content-Type: application/json
 }
 
 ###
-GET http://localhost/api/v1/logs/000000007920365c HTTP/1.1
+GET http://localhost/api/v1/logs/000000007920365b HTTP/1.1
 
 ###
 GET http://localhost/api/v1/logs/000000007920365c?q=warning HTTP/1.1

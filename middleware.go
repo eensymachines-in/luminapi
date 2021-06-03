@@ -7,10 +7,10 @@ import (
 
 	mqtt "github.com/eclipse/paho.mqtt.golang"
 	"github.com/eensymachines-in/errx"
-	"github.com/eensymachines-in/luminapi/core"
 	"github.com/gin-gonic/gin"
 	log "github.com/sirupsen/logrus"
 	"gopkg.in/mgo.v2"
+	"gopkg.in/mgo.v2/bson"
 )
 
 // CORS : this allows all cross origin requests
@@ -45,48 +45,64 @@ func dbConnect() gin.HandlerFunc {
 		log.WithFields(log.Fields{
 			"address": "localhost:37017",
 		}).Info("We now have a connection to the database")
-		c.Set("devreg", &core.DevRegsColl{Collection: session.DB("lumin").C("devreg")})
+		// pack and send in the most important dtabase objects - session.Close() and collection
+		c.Set("devreg", session.DB("lumin").C("devreg")) // send in the collection directly
 		c.Set("db_close", func() {
 			session.Close()
 		})
 	}
 }
 
-// devLogPayload : binds the request payload to well defined type here
-// expects a devlog payload to be uploaded, binds it to the context in DevLogPayload data shape
-func devLogPayload() gin.HandlerFunc {
-	return func(c *gin.Context) {
-		payload := &core.DevLogPayload{}
-		if c.ShouldBindJSON(payload) != nil {
-			payload.SerialID = "<device serial id>"
-			payload.LogData = []map[string]interface{}{}
-			errx.DigestErr(errx.NewErr(&errx.ErrJSONBind{}, nil, fmt.Sprintf("failed to read the device logs, Expected format : %v", payload), "devLogPayload/ShouldBindJSON"), c)
-			return
-		}
-		log.WithFields(log.Fields{
-			"payload": payload,
-		}).Info("Received log payload")
-		c.Set("dev_payload", payload)
+// devregPayload : from the incoming requests this will strip the the payload and map it onto the devReg object
+func devregPayload(c *gin.Context) {
+	payload := &DevReg{}
+	if c.ShouldBindJSON(payload) != nil {
+		// error unmarshalling json
+		errx.DigestErr(errx.NewErr(&errx.ErrJSONBind{}, nil,
+			fmt.Sprintf("failed to read the device logs, Expected format : %v", payload), "devLogPayload/ShouldBindJSON"), c)
+		return
 	}
+	log.WithFields(log.Fields{
+		"payload": payload,
+	}).Info("Received device registration payload")
+	c.Set("dev_payload", payload) // sedn it packing to the next handler
 }
 
-// devRegPayload : this binds the incoming dev reg payload and injects the same to the context
-// expects a registration payload from the client, binds it to the context in DevRegHttpPayload data shape
-func devRegPayload() gin.HandlerFunc {
-	return func(c *gin.Context) {
-		payload := &core.DevRegHttpPayload{}
-		if c.ShouldBindJSON(payload) != nil {
-			payload.SerialID = "<device serial id>"
-			payload.RelayIDs = []string{"IN1", "IN2", "IN3"}
-			errx.DigestErr(errx.NewErr(&errx.ErrJSONBind{}, nil, fmt.Sprintf("failed to read the device registration, Expected format : %v", payload), "devregPayload/ShouldBindJSON"), c)
-			return
-		}
-		log.WithFields(log.Fields{
-			"payload": payload,
-		}).Info("Received payload")
-		c.Set("dev_payload", payload)
-	}
-}
+// // devLogPayload : binds the request payload to well defined type here
+// // expects a devlog payload to be uploaded, binds it to the context in DevLogPayload data shape
+// func devLogPayload() gin.HandlerFunc {
+// 	return func(c *gin.Context) {
+// 		payload := &core.DevLogPayload{}
+// 		if c.ShouldBindJSON(payload) != nil {
+// 			payload.SerialID = "<device serial id>"
+// 			payload.LogData = []map[string]interface{}{}
+// 			errx.DigestErr(errx.NewErr(&errx.ErrJSONBind{}, nil, fmt.Sprintf("failed to read the device logs, Expected format : %v", payload), "devLogPayload/ShouldBindJSON"), c)
+// 			return
+// 		}
+// 		log.WithFields(log.Fields{
+// 			"payload": payload,
+// 		}).Info("Received log payload")
+// 		c.Set("dev_payload", payload)
+// 	}
+// }
+
+// // devRegPayload : this binds the incoming dev reg payload and injects the same to the context
+// // expects a registration payload from the client, binds it to the context in DevRegHttpPayload data shape
+// func devRegPayload() gin.HandlerFunc {
+// 	return func(c *gin.Context) {
+// 		payload := &core.DevRegHttpPayload{}
+// 		if c.ShouldBindJSON(payload) != nil {
+// 			payload.SerialID = "<device serial id>"
+// 			payload.RelayIDs = []string{"IN1", "IN2", "IN3"}
+// 			errx.DigestErr(errx.NewErr(&errx.ErrJSONBind{}, nil, fmt.Sprintf("failed to read the device registration, Expected format : %v", payload), "devregPayload/ShouldBindJSON"), c)
+// 			return
+// 		}
+// 		log.WithFields(log.Fields{
+// 			"payload": payload,
+// 		}).Info("Received payload")
+// 		c.Set("dev_payload", payload)
+// 	}
+// }
 
 // checkIfDeviceReg : checks to see if the device is registered, depending on how its configured it will either abort or continue with injecting into the context
 // abortIfNot : set to true and the device is not registerd the handler will abort else will continue
@@ -99,18 +115,22 @@ func checkIfDeviceReg(abortIfNot bool) gin.HandlerFunc {
 			errx.DigestErr(errx.NewErr(errx.ErrConnFailed{}, nil, "failed connection to database", "HandlDevices/dbConnect"), c)
 			return
 		}
-		devreg, _ := val.(*core.DevRegsColl)
-		var serial string
+		devreg, _ := val.(*mgo.Collection)
+		pl := &DevReg{}
 		if c.Request.Method != "POST" {
 			// Only post requests do not have the serial as a param
-			serial = c.Param("serial")
+			pl.SID = c.Param("serial")
 		} else {
 			// Within the context of post request the serial number is in the payload and not in the param
 			val, _ = c.Get("dev_payload") // has to be preceeded with devregPayload else will not get this payload
-			pl, _ := val.(core.Payload)
-			serial = pl.Serial()
+			pl, _ = val.(*DevReg)
 		}
-		yes, err := devreg.IsRegistered(serial)
+		var yes bool
+		err := pl.OfSerial(func(flt bson.M) error {
+			count, _ := devreg.Find(flt).Count()
+			yes = count > 0
+			return nil
+		})
 		if errx.DigestErr(err, c) != 0 {
 			return
 		}
@@ -118,7 +138,7 @@ func checkIfDeviceReg(abortIfNot bool) gin.HandlerFunc {
 			// the device you are looking for is not registered
 			// also the calling handler needs this to abort if not registered
 			errx.DigestErr(errx.NewErr(&errx.ErrNotFound{},
-				fmt.Errorf("no device with serial %s", serial),
+				fmt.Errorf("no device with serial %s", pl.SID),
 				"Device you are looking for is not registered",
 				"HandlDevice/IsRegistered"), c)
 			// Since no further handlers would execute, this shall close the database connection

@@ -96,14 +96,14 @@ func main() {
 	logs.GET("/:serial", checkIfDeviceReg(true), HndlDeviceLogs())
 	// bind the payload , check if device is registered, if not abort
 	// if payload ok, and device is registered it would post the logs under the device
-	logs.POST("", devLogPayload(), checkIfDeviceReg(true), HndlDeviceLogs())
+	logs.POST("", devregPayload, checkIfDeviceReg(true), HndlDeviceLogs())
 	// ++++++++++++ devices
 	devices := r.Group("/devices")
 	devices.Use(dbConnect())
-	devices.POST("", devRegPayload(), checkIfDeviceReg(false), HandlDevices)      // to register new devices
+	devices.POST("", devregPayload, checkIfDeviceReg(false), HandlDevices)        // to register new devices
 	devices.DELETE("/:serial", checkIfDeviceReg(true), HandlDevice)               // single device un-register
 	devices.PATCH("/:serial", checkIfDeviceReg(true), mqttConnect(), HandlDevice) // schedules are updated here
-	devices.GET("/:serial", HandlDevice)                                          // GETting the schedules for a device
+	devices.GET("/:serial", checkIfDeviceReg(true), HandlDevice)                  // GETting the schedules for a device
 
 	log.Info("Starting luminapi service ..")
 	defer log.Warn("Now quitting luminapi service")
