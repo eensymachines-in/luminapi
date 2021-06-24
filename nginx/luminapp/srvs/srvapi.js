@@ -23,14 +23,33 @@
                 "conflicts":response.data.conflicts || []
             }
         }
+        // this function is a basic version with no available customization on how data is read from response
+        // uses response.data to resolve the data 
+        // this can be used when the API guarentees sending data in an [] - why ? refer :
         var execute_request = async function (req, defered){
             // This is only execute the $http request and resolve / reject depending on the http response
             $http(req).then(function(response){
+                console.log("Response from api")
+                console.log(response)
                 defered.resolve(response.data);
             },function(response){
                 defered.reject(err_message(response))
             })
         }
+        // this is just a departure from execute_request  in the way one reads the response.data
+        // while we agreed to send all the data from the api as [..] , its not always possible to do that 
+        // ex : {serial:"", scheds:[..]} is when you request for device schedules. 
+        // while resolving scheds the calling function can custom send readFn 
+        var exec_req_custom_data = async function(req, defered, readFn) {
+            $http(req).then(function(response){
+                // reading the data from response is customizable 
+                defered.resolve(readFn(response.data));
+            },function(response){
+                defered.reject(err_message(response))
+            })
+        }
+        // specific implementation for get_object_from_api
+        // gets the device objects
         this.get_device_schedules = function(serial){
             var defered  = $q.defer();
             execute_request({

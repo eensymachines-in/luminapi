@@ -44,7 +44,7 @@ func TestDevReg(t *testing.T) {
 	t.Log(reg.RegAsJsonStr())
 	// Trying out non query log functions
 	t.Log(reg.(ILogs).LogData())
-	t.Log(reg.(IScheds).Schedules())
+	t.Log(reg.(IScheds).RelayStates())
 	t.Log(reg.(IRMaps).RelayIds())
 	t.Log(reg.(IRMaps).RelayMaps())
 

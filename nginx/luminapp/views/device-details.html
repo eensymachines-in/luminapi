@@ -1,0 +1,18 @@
+<div class="container">
+    <div class="row my-5">
+       <div class="col-lg-6 offset-lg-3">
+            <form ng-controller="schedCtrl">
+                <fieldset>
+                <legend>Primary schedule</legend>
+                    <span ng-repeat="rm in deviceDetails.rmaps" class="badge rounded-pill bg-primary">{[rm.defn]}&nbsp;</span>
+                    <time-select tm="pSched.on" title="ON time" desc="Alter this to change the time at which all the lights are turned ON">
+
+                    </time-select>
+                    <time-select tm="pSched.off" title="OFF time" desc="Alter this to change the time at which all the lights are turned OFF">
+                        
+                    </time-select>
+                </fieldset>
+            </form>
+        </div>
+    </div>
+</div>

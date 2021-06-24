@@ -15,8 +15,11 @@
             templateUrl:"/views/user-devices.html",
         })
         // Schedules of devices
-        .when("/:serial/schedules", {
-            templateUrl:"/views/device-schedules.html",
+        // .when("/:serial/schedules", {
+        //     templateUrl:"/views/device-schedules.html",
+        // })
+        .when("/:serial/details", {
+            templateUrl:"/views/device-details.html",
         })
         .when("/signup", {
             templateUrl:"/views/signup.html",
@@ -68,13 +71,14 @@
                 return {
                     auth : "http://auth.eensymachines.in",
                     // TODO: before moving to production change this uri
-                    lumin: "http://lumin.eensymachines.in/api/v1/devices"
+                    // lumin: "http://lumin.eensymachines.in/api/v1/devices"
+                    lumin: "http://192.168.0.39/api/v1/devices"
                 }
             }
         });
         // TODO: when moving to dev comment this.
-        console.log = function(){};     
-        console.table = function(){}; 
+        // console.log = function(){};     
+        // console.table = function(){}; 
 
     }).filter("nameFlt", function(){
         return function(name, limit){

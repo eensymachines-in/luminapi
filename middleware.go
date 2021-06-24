@@ -68,42 +68,6 @@ func devregPayload(c *gin.Context) {
 	c.Set("dev_payload", payload) // sedn it packing to the next handler
 }
 
-// // devLogPayload : binds the request payload to well defined type here
-// // expects a devlog payload to be uploaded, binds it to the context in DevLogPayload data shape
-// func devLogPayload() gin.HandlerFunc {
-// 	return func(c *gin.Context) {
-// 		payload := &core.DevLogPayload{}
-// 		if c.ShouldBindJSON(payload) != nil {
-// 			payload.SerialID = "<device serial id>"
-// 			payload.LogData = []map[string]interface{}{}
-// 			errx.DigestErr(errx.NewErr(&errx.ErrJSONBind{}, nil, fmt.Sprintf("failed to read the device logs, Expected format : %v", payload), "devLogPayload/ShouldBindJSON"), c)
-// 			return
-// 		}
-// 		log.WithFields(log.Fields{
-// 			"payload": payload,
-// 		}).Info("Received log payload")
-// 		c.Set("dev_payload", payload)
-// 	}
-// }
-
-// // devRegPayload : this binds the incoming dev reg payload and injects the same to the context
-// // expects a registration payload from the client, binds it to the context in DevRegHttpPayload data shape
-// func devRegPayload() gin.HandlerFunc {
-// 	return func(c *gin.Context) {
-// 		payload := &core.DevRegHttpPayload{}
-// 		if c.ShouldBindJSON(payload) != nil {
-// 			payload.SerialID = "<device serial id>"
-// 			payload.RelayIDs = []string{"IN1", "IN2", "IN3"}
-// 			errx.DigestErr(errx.NewErr(&errx.ErrJSONBind{}, nil, fmt.Sprintf("failed to read the device registration, Expected format : %v", payload), "devregPayload/ShouldBindJSON"), c)
-// 			return
-// 		}
-// 		log.WithFields(log.Fields{
-// 			"payload": payload,
-// 		}).Info("Received payload")
-// 		c.Set("dev_payload", payload)
-// 	}
-// }
-
 // checkIfDeviceReg : checks to see if the device is registered, depending on how its configured it will either abort or continue with injecting into the context
 // abortIfNot : set to true and the device is not registerd the handler will abort else will continue
 // ** Please note this middleware has to be preceeded with  lclDbConnect -since the device needs to be checked against a database
@@ -112,7 +76,7 @@ func checkIfDeviceReg(abortIfNot bool) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		val, exists := c.Get("devreg")
 		if !exists {
-			errx.DigestErr(errx.NewErr(errx.ErrConnFailed{}, nil, "failed connection to database", "HandlDevices/dbConnect"), c)
+			errx.DigestErr(errx.NewErr(&errx.ErrConnFailed{}, nil, "failed connection to database", "HandlDevices/dbConnect"), c)
 			return
 		}
 		devreg, _ := val.(*mgo.Collection)

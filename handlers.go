@@ -23,7 +23,7 @@ func HndlLogs(filePath string) gin.HandlerFunc {
 			file, err := os.Open(filePath)
 			if err != nil {
 				// failed to open the log path file, hence sending back an error
-				errx.DigestErr(errx.NewErr(errx.ErrInvalid{}, nil, "Failed to get log file at path. Check to see if logging is set", "HndlLogs/os.Open"), c)
+				errx.DigestErr(errx.NewErr(&errx.ErrInvalid{}, err, "Failed to get log file at path. Check to see if logging is set", "HndlLogs/os.Open"), c)
 				return
 			}
 			defer file.Close()
@@ -46,7 +46,7 @@ func HandlDevices(c *gin.Context) {
 	// Getting values from middleware - database connection and clean up closures
 	val, exists := c.Get("devreg")
 	if !exists {
-		errx.DigestErr(errx.NewErr(errx.ErrConnFailed{}, nil, "failed connection to database", "HandlDevices/dbConnect"), c)
+		errx.DigestErr(errx.NewErr(&errx.ErrConnFailed{}, nil, "failed connection to database", "HandlDevices/dbConnect"), c)
 		return
 	}
 	devreg, _ := val.(*mgo.Collection)
@@ -64,28 +64,45 @@ func HandlDevices(c *gin.Context) {
 		if yes {
 			// Incase the device is already registered we just quit from this branch
 			// no need to re-register the device
-			c.JSON(http.StatusOK, gin.H{})
+			// Duplicate registration does not throw errors
+			res := &DevReg{}
+			err := IReg(payload).OfSerial(func(flt bson.M) error {
+				return devreg.Find(flt).One(res)
+			})
+			if err != nil {
+				errx.DigestErr(errx.NewErr(&errx.ErrQuery{}, err, "Failed to insert new registration", "HandlDevices/OfSerial"), c)
+				return
+			}
+			log.WithFields(log.Fields{
+				"serial": IReg(payload).Serial(),
+			}).Info("Device is already registered")
+			c.JSON(http.StatusOK, res)
+			// when the device is registered - it emits the schedules for the existing device
+			// this is useful when if client has made changes to the schedules when the device was turned off..
+			// upon restart the device will still get the changed schedules. Server will remain the source of truth
 			return
 		}
 		// this in case the device is not registered
 		// we make default schedules for the device and push the registration in the database
 		insertion := NewDevReg(payload.SID, IRMaps(payload).RelayMaps())
-		if devreg.Insert(insertion) != nil {
+		if err := devreg.Insert(insertion); err != nil {
 			// this is incase the registration fails
-			errx.DigestErr(errx.NewErr(errx.ErrQuery{}, nil, "Failed to insert new registration", "HandlDevices/Insert"), c)
+			errx.DigestErr(errx.NewErr(&errx.ErrQuery{}, err, "Failed to insert new registration", "HandlDevices/Insert"), c)
 			return
 		}
 		// when device registers itself newly the response also has schedules
 		// newly created device registration will also have default schedules
 		// default schedules are sent back to the device which will start its job along with this
-		c.JSON(http.StatusOK, IScheds(insertion).RelayStates())
+		// but since the schedules are in slices we here pack it up in devreg format - easier on the client side to treat it as map[string]interface{}
+		result := &DevReg{SID: insertion.SID, Scheds: IScheds(insertion).RelayStates()}
+		c.JSON(http.StatusOK, result)
 		return
 	}
 }
 func HandlDevice(c *gin.Context) {
 	val, exists := c.Get("devreg")
 	if !exists {
-		errx.DigestErr(errx.NewErr(errx.ErrConnFailed{}, nil, "failed connection to database", "HandlDevices/dbConnect"), c)
+		errx.DigestErr(errx.NewErr(&errx.ErrConnFailed{}, nil, "failed connection to database", "HandlDevices/dbConnect"), c)
 		return
 	}
 	devreg, _ := val.(*mgo.Collection)
@@ -93,16 +110,18 @@ func HandlDevice(c *gin.Context) {
 	dbClose := val.(func())
 	defer dbClose()
 	serial := c.Param("serial")
-
 	if c.Request.Method == "DELETE" {
 		item := &DevReg{SID: serial}
 		err := item.OfSerial(func(flt bson.M) error {
 			return devreg.Remove(flt)
 		})
 		if err != nil {
-			errx.DigestErr(errx.NewErr(errx.ErrQuery{}, nil, "Failed to remove registration", "HandlDevices/Remove"), c)
+			errx.DigestErr(errx.NewErr(&errx.ErrQuery{}, err, "Failed to remove device registration", "HandlDevices/Remove"), c)
 			return
 		}
+		log.WithFields(log.Fields{
+			"serial": serial,
+		}).Warn("Device registration being dropped")
 		c.JSON(http.StatusOK, gin.H{})
 		return
 	} else if c.Request.Method == "PATCH" {
@@ -112,7 +131,12 @@ func HandlDevice(c *gin.Context) {
 		val, _ = c.Get("dev_payload")
 		payload, _ := val.(*DevReg)
 		if payload == nil {
-			errx.DigestErr(errx.NewErr(errx.ErrInvalid{}, nil, "Failed to read payload, {'serial', 'scheds'}", "HandlDevice/PATCH"), c)
+			errx.DigestErr(errx.NewErr(&errx.ErrInvalid{}, nil, "Failed to read payload, {'serial', 'scheds'}", "HandlDevice/PATCH"), c)
+			return
+		}
+		if IReg(payload).Serial() != serial {
+			log.Warn("Mismatch in the device serial and the url param")
+			errx.DigestErr(errx.NewErr(&errx.ErrInvalid{}, nil, "serial of the device mismatching with the url param", "HandlDevice/PATCH"), c)
 			return
 		}
 		// ++++++++++++ here we check for any conflicts within the schedules
@@ -145,7 +169,7 @@ func HandlDevice(c *gin.Context) {
 			return devreg.Update(sel, upd)
 		})
 		if err != nil {
-			errx.DigestErr(errx.NewErr(errx.ErrQuery{}, nil, "Failed to update schedules for device", "HandlDevice/QReplaceScheds"), c)
+			errx.DigestErr(errx.NewErr(&errx.ErrQuery{}, err, "Failed to update schedules for device", "HandlDevice/QReplaceScheds"), c)
 			return
 		}
 		// marshal the json string - set the topic and then off it goes
@@ -155,7 +179,7 @@ func HandlDevice(c *gin.Context) {
 		}
 		token := mqttClient.Publish(fmt.Sprintf("%s/schedules", serial), 0, false, string(mqttText))
 		token.Wait()
-		// time.Sleep(1 * time.Second)
+		log.Info("Now returning 200 ok with gin empty result ..")
 		c.JSON(http.StatusOK, gin.H{})
 		return
 	} else if c.Request.Method == "GET" {
@@ -165,7 +189,7 @@ func HandlDevice(c *gin.Context) {
 			return devreg.Find(flt).One(result)
 		})
 		if err != nil {
-			errx.DigestErr(errx.NewErr(errx.ErrQuery{}, nil, "Failed to get schedules for device", "HandlDevice/OfSerial"), c)
+			errx.DigestErr(errx.NewErr(&errx.ErrQuery{}, err, "Failed to get schedules for device", "HandlDevice/OfSerial"), c)
 			return
 		}
 		c.JSON(http.StatusOK, result)
@@ -179,7 +203,7 @@ func HndlDeviceLogs() gin.HandlerFunc {
 		// Getting the database connection
 		val, exists := c.Get("devreg")
 		if !exists {
-			errx.DigestErr(errx.NewErr(errx.ErrConnFailed{}, nil, "failed connection to database", "HandlDevices/dbConnect"), c)
+			errx.DigestErr(errx.NewErr(&errx.ErrConnFailed{}, nil, "failed connection to database", "HandlDevices/dbConnect"), c)
 			return
 		}
 		devreg, _ := val.(*mgo.Collection)
@@ -197,18 +221,18 @@ func HndlDeviceLogs() gin.HandlerFunc {
 				return devreg.Pipe(m).All(&recentLogs)
 			}) //getting all logs that are a month old
 			if err != nil {
-				errx.DigestErr(errx.NewErr(errx.ErrQuery{}, nil, "Failed to get recent logs", "HndlDeviceLogs/QRecentLogs"), c)
+				errx.DigestErr(errx.NewErr(&errx.ErrQuery{}, err, "Failed to get recent logs", "HndlDeviceLogs/QRecentLogs"), c)
 				return
 			}
 			if len(recentLogs) > 0 { //when no logs, there is no need for replacing anything
 				// Notice how we have changed the base object for query
 				// recentLogs is the DevREg with recent logs, do not use payload here
 				// payload has the logs that are to be newly pushed
-				err = ILogs(recentLogs[0]).QReplaceLogs(func(sel, upd bson.M) error {
+				err = ILogs(&DevReg{SID: pl.SID, LData: recentLogs[0].LData}).QReplaceLogs(func(sel, upd bson.M) error {
 					return devreg.Update(sel, upd)
 				}) // trimming the entire log array to only a month old logs
 				if err != nil {
-					errx.DigestErr(errx.NewErr(errx.ErrQuery{}, nil, "Failed to trim logs", "HndlDeviceLogs/QReplaceLogs"), c)
+					errx.DigestErr(errx.NewErr(&errx.ErrQuery{}, err, "Failed to trim logs", "HndlDeviceLogs/QReplaceLogs"), c)
 					return
 				}
 			}
@@ -216,7 +240,7 @@ func HndlDeviceLogs() gin.HandlerFunc {
 				return devreg.Update(sel, upd)
 			})
 			if err != nil {
-				errx.DigestErr(errx.NewErr(errx.ErrQuery{}, nil, "Failed to push new logs", "HndlDeviceLogs/QPushLogs"), c)
+				errx.DigestErr(errx.NewErr(&errx.ErrQuery{}, err, "Failed to push new logs", "HndlDeviceLogs/QPushLogs"), c)
 				return
 			}
 		} else if c.Request.Method == "GET" {
@@ -234,13 +258,14 @@ func HndlDeviceLogs() gin.HandlerFunc {
 				return devreg.Pipe(pipe).All(&result)
 			})
 			if err != nil {
-				errx.DigestErr(errx.NewErr(errx.ErrQuery{}, nil, "failed to get filtered logs", "HndlDeviceLogs/QGetLogs"), c)
+				errx.DigestErr(errx.NewErr(&errx.ErrQuery{}, err, "failed to get filtered logs", "HndlDeviceLogs/QGetLogs"), c)
 				return
 			}
-			log.WithFields(log.Fields{
-				"result": result,
-			}).Info("Now logging the result from GET Request")
-			c.JSON(http.StatusOK, result[0])
+			if len(result) > 0 {
+				c.JSON(http.StatusOK, result[0])
+				return
+			}
+			c.JSON(http.StatusOK, nil) // incase there are no logs
 			return
 		}
 	}
