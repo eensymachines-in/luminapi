@@ -3,7 +3,7 @@
     uuid of the device is from the $routeParams.serial
     A deep watch on the schedules will help to extend the object for the validation functions
     For the first change it also records a comparison JSON string. This when compare to the later state of schedules will let us know if anything has changed*/ 
-    angular.module("luminapp").controller("schedCtrl", function($scope, $routeParams,srvApi, $route,srvRefactor, $rootScope,$compile, $element){
+    angular.module("luminapp").controller("schedCtrl", function($scope, $routeParams,srvApi, $route,srvRefactor, $rootScope,$timeout){
         $scope.wait = false; //used to show/hide the ribbon progress bar
         $scope.optsSchedules = [];
         $scope.selectedSched = null; // this schedule is the pointer to selected one
@@ -15,43 +15,66 @@
             console.log("Change in selected schedule");
             console.log(after)
         })
+        var select_latest_schedule = function(){
+            $scope.selectedSched = $scope.optsSchedules[$scope.optsSchedules.length-1];
+        }
+        var extend_api_sched = function(s,i) {
+            // extends the data shape of schedule object from the api to schedule with more derived properties
+            // will extend the properties of the sched to enhanced for front end
+            result = angular.extend({}, s)
+            result.name = s.primary?"primary":"schedule";
+            result.title =s.primary?"Primary schedule":"Overlay schedule";
+            result.desc = s.primary?"Is a wide policy, applied onto all the nodes. Apply individual node exceptions ahead of this. Cannot delete but only modify the primary schedule.":"This policy is applied atop the primary schedule. Its an exception for the specific nodes. Can be deleted and modified.";
+            result.remove = s.primary? function(){} : function(){remove_sched(i)};
+            result.lbls = function(){
+                // getting rmaps definitions from ids that the schedule signifies 
+                r = [];
+                $scope.deviceDetails.rmaps.forEach(rm => {
+                    console.log("Now evaluating the value for s:")
+                    console.log(s)
+                    fltIds =s.ids.filter(el=>rm.rid ==el);
+                    if (fltIds.length >0) {
+                        // Relay id is applicable to the schedule
+                        item = {txt:rm.defn, sel:true}
+                    }else{
+                        // relay id is not applicable to the schedule
+                        item = {txt:rm.defn, sel:false}
+                    }
+                    if (s.primary == false){
+                        item.togg = function(){
+                            this.sel = !this.sel;
+                        }
+                    }
+                    r.push(item)
+                });
+                return r
+            }()
+            return result
+        }
         var remove_sched = function(schedIndex){
-            // splice works in-place and returns the item just removed 
+            // splice works in-place and returns the item just removed s
             // here all what we do is remove the desired item 
             console.log("Now removing schedule number :"+ schedIndex);
             $scope.optsSchedules.splice(schedIndex,1);
-            $scope.selectedSched = $scope.optsSchedules[$scope.optsSchedules.length-1];
-            console.table($scope.optsSchedules);
+            select_latest_schedule();
+        }
+        $scope.new_schedule = function(){
+            $scope.optsSchedules.push(extend_api_sched({
+                on:"01:00 AM",
+                off:"01:00 PM",
+                ids:[],
+                primary:false,
+            },$scope.optsSchedules.length));
+            select_latest_schedule();
         }
         $scope.$watch("deviceDetails", function(after, before){
             if (after){
                 //  populating the schedTabs array
-                console.info("Now logging the device scheds:")
-                console.table(after.scheds);
                 after.scheds.forEach((x,i)=>{
-                    $scope.optsSchedules.push({
-                        on:x.on,
-                        off:x.off,
-                        primary: x.primary,
-                        ids:x.ids,
-                        name:x.primary?"primary":"schedule",
-                        title:x.primary?"Primary schedule":"Overlay schedule",
-                        desc:x.primary?"Is a wide policy, applied onto all the nodes. Apply individual node exceptions ahead of this. Cannot delete but only modify the primary schedule.":"This policy is applied atop the primary schedule. Its an exception for the specific nodes. Can be deleted and modified.",
-                        remove : x.primary? function(){} : function(){remove_sched(i)},
-                        lbls: function(){
-                            // getting rmaps definitions from ids that the schedule signifies 
-                            result = [];
-                            x.ids.forEach(el => {
-                                fltMap =after.rmaps.filter(rm=>rm.rid ==el);
-                                if (fltMap.length >0) {
-                                    result.push(fltMap[0].defn)
-                                }
-                            });
-                            return result
-                        }()
-                    })
-                })
+                    $scope.optsSchedules.push(extend_api_sched(x,i))
+                }) //this will trigger optsSchedules watch and schedule would be modfied further
                 $scope.selectedSched = $scope.optsSchedules[0];
+                console.table($scope.optsSchedules);
             }else{
                 console.log("deviceDetails: changed but not acknowledged")
                 console.log(after);
@@ -103,25 +126,6 @@
             }else {
                 console.log("Make some changes to the schedules before submit")
             }
-        }
-        $scope.add_schedule = function(){
-            // this shall add a new template schedule to the list
-            // has default times on ON and OFF 
-            // user can edit them before saving
-            $scope.schedules.push({
-                "on":"00:00 AM",
-                "off":"00:00 PM",
-                "ids":["IN1","IN2","IN3","IN4"],
-                "primary":false,
-            })
-        }
-        $scope.remove_schedule = function(index){
-            // shall remove the schedule from the list 
-            // cannot remove primary schedules
-            // does no server action
-            $scope.schedules =$scope.schedules.filter(function(item,idx){
-                return idx!=index;
-            })
         }
     })
 })()
