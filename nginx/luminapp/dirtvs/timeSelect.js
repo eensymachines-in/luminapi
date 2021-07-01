@@ -24,30 +24,35 @@
                 $scope.ampmSelect = {val:"", opts:["AM","PM"]}
                 // ++++++++++ below 2 are convertor functions string <--> split format
                 // this directive works on the split format while the time set from the controller is string "09:34 PM"
-                $scope.timeSplitOnce = false;
+                internal = false;
                 $scope.$watch("tm", function(after, before){
-                    console.log("time changed, but will split only if condition")
-                    if (after!=before && after!==undefined && after!="" && $scope.timeSplitOnce==false){
-                        // when the call is internal we wouldnt to get into an update cycle
-                        console.log("time has not been split before, now splitting")
-                        split1 = after.split(" ")
-                        if (split1.length ==2) {
-                            $scope.ampmSelect.val = split1[1];      //  getting the AM PM from the time
-                            split2=split1[0].split(":")
-                            if (split2.length ==2) {
-                                $scope.hrSelect.val = split2[0];    //  getting the hours from the time
-                                $scope.minSelect.val = split2[1]    //  getting the minutes from the time
+                    if (after){
+                        if (!internal){
+                            // when the call is internal we wouldnt to get into an update cycle
+                            split1 = after.split(" ")
+                            if (split1.length ==2) {
+                                $scope.ampmSelect.val = split1[1];      //  getting the AM PM from the time
+                                split2=split1[0].split(":")
+                                if (split2.length ==2) {
+                                    $scope.hrSelect.val = split2[0];    //  getting the hours from the time
+                                    $scope.minSelect.val = split2[1]    //  getting the minutes from the time
+                                }
                             }
+                        }else{
+                            console.log("time changed but internal, will not re-split")
                         }
-                        $scope.timeSplitOnce = true;
-                        console.log("Reading time to fragments .." + $scope.hrSelect.val+":"+$scope.minSelect.val+" "+$scope.ampmSelect.val);
+                    } else  {
+                        console.log("time changed, but will NOT split");
+                        console.log("Debugging before/after values: "+ before +" " +after);
                     }
                 })
                 var fragment_changed  = function(after, before){
+                    internal = true;
                     if (after && after!= before) {
                         $scope.tm =$scope.hrSelect.val+":"+$scope.minSelect.val+" "+$scope.ampmSelect.val;
                         console.log("time fragment changed..");
                     }
+                    internal = false;
                 }
                 $scope.$watch("hrSelect.val", fragment_changed);
                 $scope.$watch("minSelect.val", fragment_changed);

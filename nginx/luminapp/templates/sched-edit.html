@@ -1,0 +1,16 @@
+<section id="template-schededit">
+    <legend>
+        {[sched.title]}
+        <span ng-if="!sched.primary" class="float-right" ng-click="sched.remove()">
+            <i style="cursor: pointer;" class="fas" ng-class="{false:'fa-trash', true:'fa-undo-alt'}[sched.isDeleted==true]"></i>
+        </span>
+    </legend>
+    <p class="text-muted">{[sched.desc]}</p>
+    <hr>
+    <span ng-repeat="rm in sched.lbls" class="badge rounded-pill bg-primary">{[rm]}&nbsp;</span>
+    <br/><br>
+    <time-select tm="sched.on" title="Turn ON at:" desc="From this time to the OFF time, the lights will remain ON">
+    </time-select>
+    <time-select tm="sched.off" title="Turn OFF at:" desc="From this time to the ON time, the lights will remain OFF">
+    </time-select>
+</section>

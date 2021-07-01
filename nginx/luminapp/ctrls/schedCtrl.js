@@ -3,30 +3,61 @@
     uuid of the device is from the $routeParams.serial
     A deep watch on the schedules will help to extend the object for the validation functions
     For the first change it also records a comparison JSON string. This when compare to the later state of schedules will let us know if anything has changed*/ 
-    angular.module("luminapp").controller("schedCtrl", function($scope, $routeParams,srvApi, $route,srvRefactor, $rootScope,schedTmPattern){
+    angular.module("luminapp").controller("schedCtrl", function($scope, $routeParams,srvApi, $route,srvRefactor, $rootScope,$compile, $element){
         $scope.wait = false; //used to show/hide the ribbon progress bar
-        $scope.pSched={on:"",off:""}; // primary schedule
-        $scope.$watch("pSched.on", function(after, before){
-            if (after && after!==before){
-                console.log(after);
-            }
+        $scope.optsSchedules = [];
+        $scope.selectedSched = null; // this schedule is the pointer to selected one
+        $scope.$watch("selectedSched.on", function(after){
+            console.log("Change in selected schedule");
+            console.log(after)
         })
-        $scope.$watch("pSched.off", function(after, before){
-            if (after && after!==before){
-                console.log(after);
-            }
+        $scope.$watch("selectedSched.off", function(after){
+            console.log("Change in selected schedule");
+            console.log(after)
         })
-        unreg=$scope.$watch("deviceDetails", function(after, before){
-            if (after!==null && after!==undefined && after !== before){
-                after.scheds.forEach(el=>{
-                    if (el.primary ==true){
-                        $scope.pSched = {on:el.on,off:el.off};
-                        return;
-                    }
-                });
+        var remove_sched = function(schedIndex){
+            // splice works in-place and returns the item just removed 
+            // here all what we do is remove the desired item 
+            console.log("Now removing schedule number :"+ schedIndex);
+            $scope.optsSchedules.splice(schedIndex,1);
+            $scope.selectedSched = $scope.optsSchedules[$scope.optsSchedules.length-1];
+            console.table($scope.optsSchedules);
+        }
+        $scope.$watch("deviceDetails", function(after, before){
+            if (after){
+                //  populating the schedTabs array
+                console.info("Now logging the device scheds:")
+                console.table(after.scheds);
+                after.scheds.forEach((x,i)=>{
+                    $scope.optsSchedules.push({
+                        on:x.on,
+                        off:x.off,
+                        primary: x.primary,
+                        ids:x.ids,
+                        name:x.primary?"primary":"schedule",
+                        title:x.primary?"Primary schedule":"Overlay schedule",
+                        desc:x.primary?"Is a wide policy, applied onto all the nodes. Apply individual node exceptions ahead of this. Cannot delete but only modify the primary schedule.":"This policy is applied atop the primary schedule. Its an exception for the specific nodes. Can be deleted and modified.",
+                        remove : x.primary? function(){} : function(){remove_sched(i)},
+                        lbls: function(){
+                            // getting rmaps definitions from ids that the schedule signifies 
+                            result = [];
+                            x.ids.forEach(el => {
+                                fltMap =after.rmaps.filter(rm=>rm.rid ==el);
+                                if (fltMap.length >0) {
+                                    result.push(fltMap[0].defn)
+                                }
+                            });
+                            return result
+                        }()
+                    })
+                })
+                $scope.selectedSched = $scope.optsSchedules[0];
+            }else{
+                console.log("deviceDetails: changed but not acknowledged")
+                console.log(after);
             }
         }) // here we are attempting to deep watch an array so that when items are added or removed we can detect that         
-        
+
         // GET the schedules list from api 
         // If it fails to do so, it would result in an error modal
         srvRefactor($scope).get_object_from_api(function(){
