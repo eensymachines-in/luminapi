@@ -35,10 +35,10 @@
                     fltIds =s.ids.filter(el=>rm.rid ==el);
                     if (fltIds.length >0) {
                         // Relay id is applicable to the schedule
-                        item = {txt:rm.defn, sel:true}
+                        item = {txt:rm.defn, sel:true, rid:rm.rid}
                     }else{
                         // relay id is not applicable to the schedule
-                        item = {txt:rm.defn, sel:false}
+                        item = {txt:rm.defn, sel:false, rid: rm.rid}
                     }
                     if (s.primary == false){
                         item.togg = function(){
