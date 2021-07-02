@@ -15,17 +15,40 @@
             console.log("Change in selected schedule");
             console.log(after)
         })
+        var uuoid = function (){
+            // generates a new object id for each new schedule thats added to  $scope.optsSchedules
+            // we use this as an id to track the schedules 
+            // https://stackoverflow.com/questions/3231459/create-unique-id-with-javascript
+            // return Date.now().toString(36) + Math.random().toString(36).substr(2);
+            return Math.random().toString(36).substr(2);
+        }
         var select_latest_schedule = function(){
             $scope.selectedSched = $scope.optsSchedules[$scope.optsSchedules.length-1];
         }
-        var extend_api_sched = function(s,i) {
+        $scope.remove_sched = function(id){
+            // splice works in-place and returns the item just removed s
+            // here all what we do is remove the desired item 
+            console.table($scope.optsSchedules)
+            console.log("removing item "+ id);
+            $scope.optsSchedules.forEach(function(el,index){
+                if (el.oid == id){
+                    $scope.optsSchedules.splice(index,1);
+                    console.log("Dropping item index: "+ index);
+                    return
+                }
+            })
+            console.table($scope.optsSchedules)
+            select_latest_schedule();
+        }
+        var extend_api_sched = function(s) {
             // extends the data shape of schedule object from the api to schedule with more derived properties
             // will extend the properties of the sched to enhanced for front end
             result = angular.extend({}, s)
             result.name = s.primary?"primary":"schedule";
             result.title =s.primary?"Primary schedule":"Overlay schedule";
             result.desc = s.primary?"Is a wide policy, applied onto all the nodes. Apply individual node exceptions ahead of this. Cannot delete but only modify the primary schedule.":"This policy is applied atop the primary schedule. Its an exception for the specific nodes. Can be deleted and modified.";
-            result.remove = s.primary? function(){} : function(){remove_sched(i)};
+            result.oid= uuoid(); //so that we can track the object quickly when modifying the list
+            // result.remove = s.primary? function(){} : function(){remove_sched(result.oid)};
             result.lbls = function(){
                 // getting rmaps definitions from ids that the schedule signifies 
                 r = [];
@@ -51,27 +74,21 @@
             }()
             return result
         }
-        var remove_sched = function(schedIndex){
-            // splice works in-place and returns the item just removed s
-            // here all what we do is remove the desired item 
-            console.log("Now removing schedule number :"+ schedIndex);
-            $scope.optsSchedules.splice(schedIndex,1);
-            select_latest_schedule();
-        }
+        
         $scope.new_schedule = function(){
             $scope.optsSchedules.push(extend_api_sched({
                 on:"01:00 AM",
                 off:"01:00 PM",
                 ids:[],
                 primary:false,
-            },$scope.optsSchedules.length));
+            }));
             select_latest_schedule();
         }
         $scope.$watch("deviceDetails", function(after, before){
             if (after){
                 //  populating the schedTabs array
                 after.scheds.forEach((x,i)=>{
-                    $scope.optsSchedules.push(extend_api_sched(x,i))
+                    $scope.optsSchedules.push(extend_api_sched(x))
                 }) //this will trigger optsSchedules watch and schedule would be modfied further
                 $scope.selectedSched = $scope.optsSchedules[0];
                 console.table($scope.optsSchedules);
