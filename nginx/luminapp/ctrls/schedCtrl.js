@@ -28,8 +28,6 @@
         $scope.remove_sched = function(id){
             // splice works in-place and returns the item just removed s
             // here all what we do is remove the desired item 
-            console.table($scope.optsSchedules)
-            console.log("removing item "+ id);
             $scope.optsSchedules.forEach(function(el,index){
                 if (el.oid == id){
                     $scope.optsSchedules.splice(index,1);
@@ -37,18 +35,16 @@
                     return
                 }
             })
-            console.table($scope.optsSchedules)
             select_latest_schedule();
         }
         var extend_api_sched = function(s) {
             // extends the data shape of schedule object from the api to schedule with more derived properties
             // will extend the properties of the sched to enhanced for front end
             result = angular.extend({}, s)
-            result.name = s.primary?"primary":"schedule";
+            result.name = s.primary?"primary":"overlay-"+$scope.optsSchedules.length;
             result.title =s.primary?"Primary schedule":"Overlay schedule";
             result.desc = s.primary?"Is a wide policy, applied onto all the nodes. Apply individual node exceptions ahead of this. Cannot delete but only modify the primary schedule.":"This policy is applied atop the primary schedule. Its an exception for the specific nodes. Can be deleted and modified.";
             result.oid= uuoid(); //so that we can track the object quickly when modifying the list
-            // result.remove = s.primary? function(){} : function(){remove_sched(result.oid)};
             result.lbls = function(){
                 // getting rmaps definitions from ids that the schedule signifies 
                 r = [];
