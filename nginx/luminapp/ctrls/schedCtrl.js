@@ -7,14 +7,6 @@
         $scope.wait = false; //used to show/hide the ribbon progress bar
         $scope.optsSchedules = [];
         $scope.selectedSched = null; // this schedule is the pointer to selected one
-        $scope.$watch("selectedSched.on", function(after){
-            console.log("Change in selected schedule");
-            console.log(after)
-        })
-        $scope.$watch("selectedSched.off", function(after){
-            console.log("Change in selected schedule");
-            console.log(after)
-        })
         var uuoid = function (){
             // generates a new object id for each new schedule thats added to  $scope.optsSchedules
             // we use this as an id to track the schedules 
@@ -23,11 +15,13 @@
             return Math.random().toString(36).substr(2);
         }
         var select_latest_schedule = function(){
+            // Not much going on here- only changing the section to latest one
             $scope.selectedSched = $scope.optsSchedules[$scope.optsSchedules.length-1];
         }
         $scope.remove_sched = function(id){
             // splice works in-place and returns the item just removed s
             // here all what we do is remove the desired item 
+            // id : is the unique id used to identify the objects inside optsSchedules
             $scope.optsSchedules.forEach(function(el,index){
                 if (el.oid == id){
                     $scope.optsSchedules.splice(index,1);
@@ -37,9 +31,11 @@
             })
             select_latest_schedule();
         }
+        // deviceDetails.scheds > optsSchedules : object extension
         var extend_api_sched = function(s) {
             // extends the data shape of schedule object from the api to schedule with more derived properties
             // will extend the properties of the sched to enhanced for front end
+            // on/off string properties of the schedule are modified from within time-select
             result = angular.extend({}, s)
             result.name = s.primary?"primary":"overlay-"+$scope.optsSchedules.length;
             result.title =s.primary?"Primary schedule":"Overlay schedule";
@@ -49,8 +45,6 @@
                 // getting rmaps definitions from ids that the schedule signifies 
                 r = [];
                 $scope.deviceDetails.rmaps.forEach(rm => {
-                    console.log("Now evaluating the value for s:")
-                    console.log(s)
                     fltIds =s.ids.filter(el=>rm.rid ==el);
                     if (fltIds.length >0) {
                         // Relay id is applicable to the schedule
@@ -70,8 +64,10 @@
             }()
             return result
         }
-        
+        // User by clicking on the New button will trigger this
         $scope.new_schedule = function(){
+            // Pushes a new default schedule to the list 
+            // also selects this latest schedule in the main drop down
             $scope.optsSchedules.push(extend_api_sched({
                 on:"01:00 AM",
                 off:"01:00 PM",
@@ -80,6 +76,7 @@
             }));
             select_latest_schedule();
         }
+        // srvRefactor($scope).get_object_from_api will trigger this
         $scope.$watch("deviceDetails", function(after, before){
             if (after){
                 //  populating the schedTabs array
@@ -92,10 +89,10 @@
                 console.log("deviceDetails: changed but not acknowledged")
                 console.log(after);
             }
-        }) // here we are attempting to deep watch an array so that when items are added or removed we can detect that         
-
-        // GET the schedules list from api 
+        }) 
+        // GET the device details from the api
         // If it fails to do so, it would result in an error modal
+        // Sequence -1 
         srvRefactor($scope).get_object_from_api(function(){
             return srvApi.get_device_schedules($routeParams.serial)
         },function(){
@@ -103,42 +100,30 @@
         }, "deviceDetails") //getting the schedules would get all the device details
         // schedules need the relay maps as well 
         $scope.submit = function(){
-            // console.log(JSON.stringify($scope.schedules))
-            // console.log(origSchedules)
-            if (JSON.stringify($scope.schedules) !== origSchedules) {
-                // Here we need to check to see if the original list is necessary before we push the changes.
-                // remember that this patch operation would also involve the data broker sending a push notification to the device on the ground
-                // console.log("we are about to submit changes to the schedules")
-                $scope.wait = true;
-                // $scope.schedules.forEach(x=> delete x.conflicts) // incase there has been an conflicts error we dont want the extra properties to go along with the body
-                srvApi.patch_device_schedules($routeParams.serial,$scope.schedules).then(function(){
-                    console.log("Success.. we have patched the schedules on the cloud");
-                    $scope.wait = false;
-                    $rootScope.success = {
-                        title :"Done!",
-                        message:"Schedules updated! - If your device was online, it would have received this change",
-                        upon_exit: function(){
-                            $route.reload();
-                        }
-                    }
-                },function(error){
-                    $scope.wait = false;
-                    error.upon_exit = function(){
-                        console.error(error);
-                        // We wouldnt want the reload since then the changes (although invalid) will not reflect back
-                    }
-                    if (error.status ==400) {
-                        // incase of a bad request we add the conflicts to the respective schedules 
-                        console.log(error.conflicts);
-                        error.conflicts.forEach(function(el, index){
-                            error.message += "\n"+el.on +"-"+el.off;
-                        })
-                    }
-                    $rootScope.err = error;
+            scheds = [] ; // array of schedules ready to be dispatched to the api
+            // below we go ahead to transform the optsSchedules model to sched model as required by the api
+            $scope.optsSchedules.forEach(function(el){
+                scheds.push({
+                    on:el.on, 
+                    off:el.off, 
+                    primary:el.primary,
+                    ids: function(){
+                        re = [];
+                        el.lbls.forEach(x=>{
+                            if (x.sel == true){
+                                re.push(x.rid);
+                            }
+                        });
+                        return re
+                    }()
                 })
-            }else {
-                console.log("Make some changes to the schedules before submit")
+            })
+            payload = {
+                serial: $scope.deviceDetails.serial,
+                scheds: scheds
             }
+            console.log("Change payload now ready to be sent to server");
+            console.log(payload)
         }
     })
 })()

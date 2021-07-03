@@ -34,19 +34,29 @@
                 <time-select tm="selectedSched.off" title="Turn OFF at:" desc="From this time to the ON time, the lights will remain OFF">
                 </time-select>
                 <hr>
-                <section ng-if="selectedSched.primary==false">
+                <div class="form-group">
+                    <legend>
+                        Save Changes
+                    </legend>
+                    <p class="text-muted">Will save schedules for the devices on the server and also sync the changes to the device. Please note the changes are permanent & irreversible.</p>
+                    <submit-confirm 
+                            submit="submit()" 
+                            btn-lbl="<i class='far fa-paper-plane'></i>&nbsp;Save" pop-confirm>
+                    </submit-confirm>
+                </div>
+                <hr  ng-if="selectedSched.primary==false">
+                <div class="form-group" ng-if="selectedSched.primary==false">
                     <!-- this section is for deleting the schedule and would be available only incases of non-primary schedules -->
                     <legend>
                         Delete schedule
                     </legend>
                     <p class="text-muted">Deleting a schedule is irreversible. Although you can always add a new one just like this one</p>
-                    <span class="float-right">
-                        <button type="button" 
+                    <button type="button" 
                         class="btn btn-outline-primary"
                         ng-click="remove_sched(selectedSched.oid)"
-                        ><i class="fas fa-trash"></i>&nbsp;Delete</button>
-                    </span>
-                </section>
+                    ><i class="fas fa-trash"></i>&nbsp;Delete</button>
+                </div>
+                
             </section>
         </div>
     </div>
