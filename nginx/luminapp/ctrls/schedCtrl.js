@@ -118,6 +118,7 @@
                     }()
                 })
             })
+            // this goes into #16
             payload = {
                 serial: $scope.deviceDetails.serial,
                 scheds: scheds
