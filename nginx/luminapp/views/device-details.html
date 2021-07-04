@@ -14,13 +14,16 @@
             </div>
             <!-- details of one selected schedule -->
             <section id="section-selschedule">
-                <legend>
+                <legend class="text-info">
                     {[selectedSched.title]}
                 </legend>
                 <p class="text-muted">{[selectedSched.desc]}</p>
                 <hr>
                 <!-- selecting the relay maps  -->
-                <p class="text-muted" ng-if="selectedSched.primary==false">Select atleast one area for the schedule</p>
+                <p class="text-muted" 
+                    ng-if="selectedSched.primary==false">
+                    Click to select <strong class="text-warning">atleast one</strong> of the nodes to apply the schedule to.
+                </p>
 
                 <span ng-repeat="rm in selectedSched.lbls" 
                 ng-class="{true:'bg-primary', false:'bg-secondary'}[rm.sel==true]"
@@ -28,17 +31,20 @@
                 ng-click="rm.togg()"
                 >{[rm.txt]}&nbsp;</span>
                 
-                <br/><br>
-                <time-select tm="selectedSched.on" title="Turn ON at:" desc="From this time to the OFF time, the lights will remain ON">
+                <hr>
+                <time-select tm="selectedSched.on" title="Turn ON at:" 
+                desc="From this time to the OFF time, the lights will remain ON">
                 </time-select>
-                <time-select tm="selectedSched.off" title="Turn OFF at:" desc="From this time to the ON time, the lights will remain OFF">
+                <time-select tm="selectedSched.off" title="Turn OFF at:" 
+                desc="From this time to the ON time, the lights will remain OFF">
                 </time-select>
                 <hr>
+
                 <div class="form-group">
                     <legend>
                         Save Changes
                     </legend>
-                    <p class="text-muted">Will save schedules for the devices on the server and also sync the changes to the device. Please note the changes are permanent & irreversible.</p>
+                    <p class="text-muted">To save the changes you've just made. <em class="text-warning">Will also sync the device instantly</em></p>
                     <submit-confirm 
                             submit="submit()" 
                             btn-lbl="<i class='far fa-paper-plane'></i>&nbsp;Save" pop-confirm>
