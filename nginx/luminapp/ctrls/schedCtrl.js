@@ -144,8 +144,14 @@
                     $rootScope.err = error;
                 })
             }else {
-                console.error("One or more schedules have no nodes selected");
-                console.error("All schedules need to have aleast one node selected")
+                // case when you need to enforce selection of atleast one label on every schedule
+                $rootScope.err = {
+                    statusText: "One or more schedules have no nodes selected",
+                    message: "Every schedule needs atleast one area selected on which it operates. Check all the schedules for unselected areas",
+                    upon_exit: function(){
+                        console.log("Acknowledged error..");
+                    }
+                }
             }
                 
         }

@@ -24,10 +24,10 @@
                     ng-if="selectedSched.primary==false">
                     Click to select <strong class="text-warning">atleast one</strong> of the nodes to apply the schedule to.
                 </p>
-
+                
                 <span ng-repeat="rm in selectedSched.lbls" 
                 ng-class="{true:'bg-primary', false:'bg-secondary'}[rm.sel==true]"
-                class="badge rounded-pill "
+                class="badge rounded-pill"
                 ng-click="rm.togg()"
                 >{[rm.txt]}&nbsp;</span>
                 
@@ -47,7 +47,7 @@
                     <p class="text-muted">To save the changes you've just made. <em class="text-warning">Will also sync the device instantly</em></p>
                     <submit-confirm 
                             submit="submit()" 
-                            btn-lbl="<i class='far fa-paper-plane'></i>&nbsp;Save" pop-confirm>
+                            btn-lbl="<i class='far fa-paper-plane'></i>&nbsp;Save">
                     </submit-confirm>
                 </div>
                 <hr  ng-if="selectedSched.primary==false">
