@@ -29,9 +29,9 @@
                 <hr>
                 <section ng-if="selectedSched.conflicts">
                     <div class="alert alert-dismissible alert-primary">
-                        <button type="button" class="close" data-dismiss="alert">&times;</button>
-                        <strong>Oh snap!</strong> <p> This Schedule conflicts with some other. Change the node selection or offset on/off time by a minute. Schedules operating on the same nodes cannot be effected on the same/ overlapping times.
+                        <strong>Conflicting schedule</strong> <p> This Schedule conflicts with some other. Schedules operating on the same nodes cannot have overlapping times.
                         </p>
+                        <p>Offset the time of the schedule by a minute.</p>
                     </div>
                     <hr>
                 </section>
@@ -44,10 +44,8 @@
                 <hr>
 
                 <div class="form-group">
-                    <legend>
-                        Save Changes
-                    </legend>
-                    <p class="text-muted">To save the changes you've just made. <em class="text-warning">Will also sync the device instantly</em></p>
+                    <legend>Save Changes</legend>
+                    <em class="text-warning">Will also sync the device instantly</em></p>
                     <submit-confirm 
                             submit="submit()" 
                             btn-lbl="<i class='far fa-paper-plane'></i>&nbsp;Save">
