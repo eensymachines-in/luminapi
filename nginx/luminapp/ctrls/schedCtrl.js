@@ -16,7 +16,13 @@
         }
         var select_latest_schedule = function(){
             // Not much going on here- only changing the section to latest one
-            $scope.selectedSched = $scope.optsSchedules[$scope.optsSchedules.length-1];
+            if($scope.optsSchedules.length>=1){
+                $scope.selectedSched = $scope.optsSchedules[$scope.optsSchedules.length-1];
+            }else{
+                // Select nothing 
+                console.error("select_latest_schedule: cannot select if optsSchedules is empty")
+                $scope.selectedSched = null;
+            }
         }
         $scope.remove_sched = function(id){
             // splice works in-place and returns the item just removed s
@@ -37,10 +43,13 @@
             // will extend the properties of the sched to enhanced for front end
             // on/off string properties of the schedule are modified from within time-select
             result = angular.extend({}, s)
-            result.name = s.primary?"primary":"overlay-"+$scope.optsSchedules.length;
+            result.name = s.primary?"Primary":"Exception-"+$scope.optsSchedules.length;
             result.title =s.primary?"Primary schedule":"Overlay schedule";
-            result.desc = s.primary?"Is a wide policy, applied onto all the nodes. Apply individual node exceptions ahead of this. Cannot delete but only modify the primary schedule.":"Overlay schedules are exceptions atop primary. They can be modified/deleted. Applies to select few nodes / all nodes";
+            result.desc = s.primary?"Applies to all nodes at once. Exceptions are applied on and over this. While you can change the time here, cannot select the nodes.":"Exception schedules are over and additional to the primary schedule. Select the nodes and the time for which they are applied";
             result.oid= uuoid(); //so that we can track the object quickly when modifying the list
+            result.match_time = function(on, off){
+                return (this.on == on && this.off == off);;
+            }
             result.lbls = function(){
                 // getting rmaps definitions from ids that the schedule signifies 
                 r = [];
@@ -135,12 +144,29 @@
                     console.log(data);
                     $route.reload();
                 },function(error){
-                    error.upon_exit = function(){
-                        // this runs when the modal is dismissed 
-                        $scope.$apply(function(){
-                            $route.reload()
-                        })
+                    if (error.conflicts.length >0){
+                        // this case when we have schedules conflicting 
+                        error.conflicts.forEach(el=>{
+                            pick =$scope.optsSchedules.filter(sch=>sch.match_time(el.on, el.off)==true);
+                            if (pick.length>0){
+                                pick[0].conflicts = true;
+                            }
+                        });
+                        error.upon_exit = function(){
+                            // error dismissed but page not reloaded
+                            // this is when 
+                            $scope.$apply(function(){})
+                        }
+                        console.table($scope.optsSchedules);
+                    } else{
+                        error.upon_exit = function(){
+                            // this runs when the modal is dismissed 
+                            $scope.$apply(function(){
+                                $route.reload()
+                            })
+                        }
                     }
+                   
                     $rootScope.err = error;
                 })
             }else {

@@ -27,7 +27,7 @@ Content-Type: application/json
     "serial":"000000007920365b",
     "scheds" : [
         {"on":"06:00 PM", "off": "08:33 PM", "primary":true, "ids":["IN1","IN2","IN3","IN4"]},
-        {"on":"07:30 AM", "off": "07:40 AM", "primary":false, "ids":["IN1","IN3"]}
+        {"on":"06:00 PM", "off": "07:40 AM", "primary":false, "ids":["IN1","IN3"]}
     ]
 }
 ###

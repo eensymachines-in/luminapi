@@ -14,25 +14,27 @@
             </div>
             <!-- details of one selected schedule -->
             <section id="section-selschedule">
-                <legend class="text-info">
-                    {[selectedSched.title]}
+                <!-- just the title head+ nodes selection -->
+                <legend>
+                    Schedule for:
                 </legend>
-                <p class="text-muted">{[selectedSched.desc]}</p>
-                <hr>
-                <!-- selecting the relay maps  -->
-                <p class="text-muted" 
-                    ng-if="selectedSched.primary==false">
-                    Click to select <strong class="text-warning">atleast one</strong> of the nodes to apply the schedule to.
-                </p>
-                
                 <span ng-repeat="rm in selectedSched.lbls" 
                 ng-class="{true:'bg-primary', false:'bg-secondary'}[rm.sel==true]"
                 class="badge rounded-pill"
                 ng-click="rm.togg()"
                 style="cursor: pointer;"
                 >{[rm.txt]}&nbsp;</span>
-                
+                <br> <br>
+                <p class="text-muted">{[selectedSched.desc]}</p>
                 <hr>
+                <section ng-if="selectedSched.conflicts">
+                    <div class="alert alert-dismissible alert-primary">
+                        <button type="button" class="close" data-dismiss="alert">&times;</button>
+                        <strong>Oh snap!</strong> <p> This Schedule conflicts with some other. Change the node selection or offset on/off time by a minute. Schedules operating on the same nodes cannot be effected on the same/ overlapping times.
+                        </p>
+                    </div>
+                    <hr>
+                </section>
                 <time-select tm="selectedSched.on" title="Turn ON at:" 
                 desc="From this time to the OFF time, the lights will remain ON">
                 </time-select>
@@ -57,7 +59,7 @@
                     <legend>
                         Delete schedule
                     </legend>
-                    <p class="text-muted">Deleting a schedule is irreversible. Although you can always add a new one just like this one</p>
+                    <p class="text-muted"><strong class="text-warning">Warning!</strong> Deleting a schedule is irreversible. Although you can always add a new one just like this one</p>
                     <button type="button" 
                         class="btn btn-outline-primary"
                         ng-click="remove_sched(selectedSched.oid)"
