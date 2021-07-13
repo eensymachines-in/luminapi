@@ -1,9 +1,3 @@
----
-title: Schedules
-layout: template
-filename: schedules.md
----
-
 ### Schedules
 ---------
 
