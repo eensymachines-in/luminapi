@@ -9,4 +9,4 @@ filename: index.md
 
 - Schedules
   - API
-    - [Patching](/schedules)
+    - [Patching](/schedules.md)
