@@ -3,4 +3,4 @@
 
 - Schedules
   - API
-    - [Patching](schedules.md)
+    - [Patching](/schedules)
