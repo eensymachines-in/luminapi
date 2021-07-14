@@ -3,6 +3,24 @@
 
 Modifying schedules involves `Patching schedules` on __existing registered devices__. Such when patched are passed to the MQTT broker and further to subscribing device. Cloud remains the single source of truth, when modified will `push` to synchronize devices (on the ground).
 
+Sending an http request to the server for the schedule patch, is about 
+- Identifying the device to patch
+- Schedules to patch
+
+```
+PATCH  http://localhost/api/v1/devices/000000007920365b HTTP/1.1
+Content-Type: application/json
+
+{
+    "serial":"000000007920365b",
+    "scheds" : [
+        {"on":"06:00 PM", "off": "08:33 PM", "primary":true, "ids":["IN1","IN2","IN3","IN4"]},
+        {"on":"06:00 PM", "off": "07:40 AM", "primary":false, "ids":["IN1","IN3"]}
+    ]
+}
+```
+
+
 Here we discuss schedules from the standpoint of the web services / application. We start from the database models and then rile up all the way to the front on the user interface. The purpose of this documentation is the detailed view of the code and understanding of the CRUD of schedules on the server
 
 ```json
