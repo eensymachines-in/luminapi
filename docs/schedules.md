@@ -1,5 +1,7 @@
-### Schedules
+### Schedules CRUD
 ---------
+
+Modifying schedules involves `Patching schedules` on __existing registered devices__. Such when patched are passed to the MQTT broker and further to subscribing device. Cloud remains the single source of truth, when modified will `push` to synchronize devices (on the ground).
 
 Here we discuss schedules from the standpoint of the web services / application. We start from the database models and then rile up all the way to the front on the user interface. The purpose of this documentation is the detailed view of the code and understanding of the CRUD of schedules on the server
 
