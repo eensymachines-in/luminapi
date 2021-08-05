@@ -1,5 +1,5 @@
-<div class="container" ng-controller="schedCtrl">
-    <div class="row my-5">
+<div class="container" authorized-only lvl=0>
+    <div class="row my-5" ng-controller="schedCtrl">
        <div class="col-lg-6 offset-lg-3">
            <!-- drop down used to control the selected schedule -->
             <div class="form-group">
@@ -63,7 +63,6 @@
                         ng-click="remove_sched(selectedSched.oid)"
                     ><i class="fas fa-trash"></i>&nbsp;Delete</button>
                 </div>
-                
             </section>
         </div>
     </div>

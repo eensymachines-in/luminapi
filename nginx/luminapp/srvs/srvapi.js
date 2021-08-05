@@ -36,6 +36,7 @@
                 defered.reject(err_message(response))
             })
         }
+
         // this is just a departure from execute_request  in the way one reads the response.data
         // while we agreed to send all the data from the api as [..] , its not always possible to do that 
         // ex : {serial:"", scheds:[..]} is when you request for device schedules. 
@@ -47,6 +48,17 @@
             },function(response){
                 defered.reject(err_message(response))
             })
+        }
+        this.fail_request = function(err){
+            // simple function to send a err message as a deferred rejection
+            // this is useful when doing cascaded requests
+            // black listing the device involves 2 requests one inside another
+            // the outer request would want this as a deferred rejection when it fails
+            var defered  = $q.defer();
+            $timeout(function(){
+                defered.reject(err)
+            }, 200)
+            return defered.promise
         }
         // specific implementation for get_object_from_api
         // gets the device objects
@@ -83,6 +95,19 @@
                     'Content-Type': "application/json",
                 },
             }, defered)
+            return defered.promise;
+        }
+        this.remove_luminreg = function(serial) {
+            // this will drop the device registration from luminapi database
+            // used in conjunction with blacklisting devices 
+            var defered  = $q.defer();
+            execute_request({
+                method :"DELETE",
+                url:baseURL.lumin+"/"+serial,
+                headers:{
+                    'Content-Type': "application/json",
+                }
+            },defered)
             return defered.promise;
         }
         this.blacklist_device = function(serial, black){

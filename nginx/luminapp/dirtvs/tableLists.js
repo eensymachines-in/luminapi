@@ -89,7 +89,11 @@
                             if (el.modified==true){
                                 if (el.black ==true) {
                                     // if its blacklisted then its st fwd
-                                    return srvApi.blacklist_device(el.serial,true)
+                                    srvApi.blacklist_device(el.serial,true).then(function(){
+                                        return srvApi.remove_luminreg(el.serial)
+                                    }, function(err){
+                                        return srvApi.fail_request(err)
+                                    })
                                 } else {
                                     // If the device is modified and not blacklisted then the lock status has been changed
                                     return srvApi.lock_device(el.serial,el.lock)

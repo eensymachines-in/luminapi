@@ -11,12 +11,14 @@
             $scope.$broadcast("validate",{})
             $timeout(function(){
                 $scope.$apply(function(){
+                    // by this time the broadcasted validate command would have been complete 
                     if(!$scope.isEmailInvalid && !$scope.isPassInvalid) {
                         $scope.wait = true;
                         srvApi.log_in($scope.details.email,$scope.details.passwd).then(function(data){
                             $scope.err = null;
                             $scope.wait = false;
-                            $location.url("/"+$scope.details.email+"/account")
+                            // Ahead of feedback from the user, it makes more sense to show devices rather than account details
+                            $location.url("/"+$scope.details.email+"/devices")
                         }, function(error){
                             error.upon_exit = function(){
                                 $scope.$apply(function(){
