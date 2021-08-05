@@ -47,6 +47,7 @@
                         scope.wait = false;
                         $route.reload();
                     }, function(error){
+                        console.error("submit_list_changes: error")
                         scope.wait = false;
                         error.upon_exit  = function(){
                             scope.$apply(function(){

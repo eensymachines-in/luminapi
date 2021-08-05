@@ -49,15 +49,41 @@
                 defered.reject(err_message(response))
             })
         }
+        var execute_cascade_req = function(req1, req2, defered){
+            // execute_cascade_req : works the same as execute_request
+            // but can execute 2 requests one after the other 
+            // resolves / rejects only when the sequence of requests is done
+            $http(req1).then(function(response1){
+                console.log("Request1 done:")
+                console.log(response1)
+                // defered.resolve(response.data);
+                // this is where we execute the next one 
+                // Note: second request is executed only on the success of the first one
+                if (req2){
+                    $http(req2).then(function(response2){
+                        console.log("Request2 done:")
+                        console.log(response2)
+                        defered.resolve({r1: response1.data, r2: response2.data})
+                    }, function(response2){
+                        defered.reject(err_message(response2))
+                    })
+                } else{
+                    defered.resolve(response1.data);
+                }
+            },function(response1){
+                defered.reject(err_message(response1))
+            })
+        }
         this.fail_request = function(err){
             // simple function to send a err message as a deferred rejection
             // this is useful when doing cascaded requests
             // black listing the device involves 2 requests one inside another
             // the outer request would want this as a deferred rejection when it fails
+            console.error("Now executing fail_request")
             var defered  = $q.defer();
             $timeout(function(){
                 defered.reject(err)
-            }, 200)
+            }, 10)
             return defered.promise
         }
         // specific implementation for get_object_from_api
@@ -112,16 +138,26 @@
         }
         this.blacklist_device = function(serial, black){
              // Patches the device for lock / unlock status 
+            //  Incase of whitelisting the device this will have to send one request
+            // but while black listing device this will send in 2
              var defered  = $q.defer();
              authInfo = lclStorage.get_auth()
-             execute_request({
+             req1 = {
                 method :"PATCH",
                 url:baseURL.auth+"/devices/"+serial+"?black="+black,
                 headers:{
                     'Content-Type': "application/json",
                     'Authorization': "Bearer "+ authInfo.authtok,
                 }
-            },defered)
+            }
+            req2 = black ==true ? {
+                method :"DELETE",
+                url:baseURL.lumin+"/"+serial,
+                headers:{
+                    'Content-Type': "application/json",
+                }
+            }:null
+            execute_cascade_req(req1,req2,defered)
             return defered.promise;
         }
         this.lock_device = function (serial, lock){
