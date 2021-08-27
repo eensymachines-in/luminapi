@@ -16,6 +16,34 @@ import (
 	"gopkg.in/mgo.v2/bson"
 )
 
+func HndlCommands(c *gin.Context) {
+	if c.Request.Method == "POST" {
+		action := c.Query("action")
+		serial := c.Param("serial") // we should ideally check for the device if its registered
+		// but since this is just a mqtt post we are skipping that for now
+		// worst case is that some miscreant can push excessive random post requests to make the mqtt broker busy
+		val, _ := c.Get("mqttclient")
+		mqttClient, _ := val.(mqtt.Client)
+		defer mqttClient.Disconnect(250) // this is important to dispose
+		if action == "" {
+			errx.DigestErr(errx.NewErr(&errx.ErrInvalid{}, nil, "Failed to get any action on the command", "HndlCommands"), c)
+			return
+		}
+		if action == "shutdown" {
+			// We just post the command to the mqtt broker
+			mqttText := "shutdown=now"
+			token := mqttClient.Publish(fmt.Sprintf("%s/commands", serial), 0, false, mqttText)
+			token.Wait()
+			log.Infof("Sent command to %s: shutdown", serial)
+			c.AbortWithStatus(http.StatusOK)
+			return
+			// yeah thats it, api will only shuttle a text message to the mqtt broker
+		}
+		errx.DigestErr(errx.NewErr(&errx.ErrInvalid{}, nil, "Invalid action in the command", "HndlCommands"), c)
+		return
+	}
+}
+
 // HndlLogs : in the context of the log file path this send out a handler used by the api to output logs
 func HndlLogs(filePath string) gin.HandlerFunc {
 	return func(c *gin.Context) {

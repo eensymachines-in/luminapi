@@ -104,6 +104,11 @@ func main() {
 	devices.PATCH("/:serial", checkIfDeviceReg(true), devregPayload, mqttConnect(), HandlDevice) // schedules are updated here
 	devices.GET("/:serial", checkIfDeviceReg(true), HandlDevice)                                 // GETting the schedules for a device
 
+	// a group to facilitate commands to the device from the app
+	// A command can only be only posted, the nature of the action in
+	cmds := r.Group("/cmds")
+	cmds.POST("/:serial", mqttConnect(), HndlCommands)
+
 	log.Info("Starting luminapi service ..")
 	defer log.Warn("Now quitting luminapi service")
 	log.Fatal(r.Run(":8080"))
