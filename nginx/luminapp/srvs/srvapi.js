@@ -86,6 +86,18 @@
             }, 10)
             return defered.promise
         }
+        this.shutdown_device = function(serial){
+            var defered  = $q.defer();
+            // http://localhost/api/v1/cmds/000000007920365b?action=shutdown
+            execute_request({
+                method :"POST",
+                url:baseURL.cmds+"/"+serial+"?action=shutdown",
+                headers:{
+                    'Content-Type': "application/json",
+                },
+            }, defered)
+            return defered.promise;
+        }
         // specific implementation for get_object_from_api
         // gets the device objects
         this.get_device_schedules = function(serial){
