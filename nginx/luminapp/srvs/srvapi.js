@@ -23,14 +23,83 @@
                 "conflicts":response.data.conflicts || []
             }
         }
+        // this function is a basic version with no available customization on how data is read from response
+        // uses response.data to resolve the data 
+        // this can be used when the API guarentees sending data in an [] - why ? refer :
         var execute_request = async function (req, defered){
             // This is only execute the $http request and resolve / reject depending on the http response
             $http(req).then(function(response){
+                console.log("Response from api")
+                console.log(response)
                 defered.resolve(response.data);
             },function(response){
                 defered.reject(err_message(response))
             })
         }
+
+        // this is just a departure from execute_request  in the way one reads the response.data
+        // while we agreed to send all the data from the api as [..] , its not always possible to do that 
+        // ex : {serial:"", scheds:[..]} is when you request for device schedules. 
+        // while resolving scheds the calling function can custom send readFn 
+        var exec_req_custom_data = async function(req, defered, readFn) {
+            $http(req).then(function(response){
+                // reading the data from response is customizable 
+                defered.resolve(readFn(response.data));
+            },function(response){
+                defered.reject(err_message(response))
+            })
+        }
+        var execute_cascade_req = function(req1, req2, defered){
+            // execute_cascade_req : works the same as execute_request
+            // but can execute 2 requests one after the other 
+            // resolves / rejects only when the sequence of requests is done
+            $http(req1).then(function(response1){
+                console.log("Request1 done:")
+                console.log(response1)
+                // defered.resolve(response.data);
+                // this is where we execute the next one 
+                // Note: second request is executed only on the success of the first one
+                if (req2){
+                    $http(req2).then(function(response2){
+                        console.log("Request2 done:")
+                        console.log(response2)
+                        defered.resolve({r1: response1.data, r2: response2.data})
+                    }, function(response2){
+                        defered.reject(err_message(response2))
+                    })
+                } else{
+                    defered.resolve(response1.data);
+                }
+            },function(response1){
+                defered.reject(err_message(response1))
+            })
+        }
+        this.fail_request = function(err){
+            // simple function to send a err message as a deferred rejection
+            // this is useful when doing cascaded requests
+            // black listing the device involves 2 requests one inside another
+            // the outer request would want this as a deferred rejection when it fails
+            console.error("Now executing fail_request")
+            var defered  = $q.defer();
+            $timeout(function(){
+                defered.reject(err)
+            }, 10)
+            return defered.promise
+        }
+        this.shutdown_device = function(serial){
+            var defered  = $q.defer();
+            // http://localhost/api/v1/cmds/000000007920365b?action=shutdown
+            execute_request({
+                method :"POST",
+                url:baseURL.cmds+"/"+serial+"?action=shutdown",
+                headers:{
+                    'Content-Type': "application/json",
+                },
+            }, defered)
+            return defered.promise;
+        }
+        // specific implementation for get_object_from_api
+        // gets the device objects
         this.get_device_schedules = function(serial){
             var defered  = $q.defer();
             execute_request({
@@ -66,18 +135,41 @@
             }, defered)
             return defered.promise;
         }
+        this.remove_luminreg = function(serial) {
+            // this will drop the device registration from luminapi database
+            // used in conjunction with blacklisting devices 
+            var defered  = $q.defer();
+            execute_request({
+                method :"DELETE",
+                url:baseURL.lumin+"/"+serial,
+                headers:{
+                    'Content-Type': "application/json",
+                }
+            },defered)
+            return defered.promise;
+        }
         this.blacklist_device = function(serial, black){
              // Patches the device for lock / unlock status 
+            //  Incase of whitelisting the device this will have to send one request
+            // but while black listing device this will send in 2
              var defered  = $q.defer();
              authInfo = lclStorage.get_auth()
-             execute_request({
+             req1 = {
                 method :"PATCH",
                 url:baseURL.auth+"/devices/"+serial+"?black="+black,
                 headers:{
                     'Content-Type': "application/json",
                     'Authorization': "Bearer "+ authInfo.authtok,
                 }
-            },defered)
+            }
+            req2 = black ==true ? {
+                method :"DELETE",
+                url:baseURL.lumin+"/"+serial,
+                headers:{
+                    'Content-Type': "application/json",
+                }
+            }:null
+            execute_cascade_req(req1,req2,defered)
             return defered.promise;
         }
         this.lock_device = function (serial, lock){

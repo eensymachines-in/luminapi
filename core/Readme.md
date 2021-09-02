@@ -1,1 +1,0 @@
-Core to the luminapi this package will have the logic to handle the core functions of luminapp

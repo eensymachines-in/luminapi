@@ -90,20 +90,24 @@ func main() {
 	/*Admin related tasks here under one group. Check the nginx conf this has been appropriately */
 	grpAdmin := r.Group("/admin")
 	grpAdmin.GET("/logs", HndlLogs(os.Getenv("LOGF")))
-	// Device specific logs can be posted here
+	// +++++++++++++++++++++ logs
+	// Only device specific logs, GET and POST
 	logs := r.Group("/logs")
 	logs.Use(dbConnect())
 	logs.GET("/:serial", checkIfDeviceReg(true), HndlDeviceLogs())
-	// bind the payload , check if device is registered, if not abort
-	// if payload ok, and device is registered it would post the logs under the device
-	logs.POST("", devLogPayload(), checkIfDeviceReg(true), HndlDeviceLogs())
+	logs.POST("", devregPayload, checkIfDeviceReg(true), HndlDeviceLogs())
 	// ++++++++++++ devices
 	devices := r.Group("/devices")
 	devices.Use(dbConnect())
-	devices.POST("", devRegPayload(), checkIfDeviceReg(false), HandlDevices)      // to register new devices
-	devices.DELETE("/:serial", checkIfDeviceReg(true), HandlDevice)               // single device un-register
-	devices.PATCH("/:serial", checkIfDeviceReg(true), mqttConnect(), HandlDevice) // schedules are updated here
-	devices.GET("/:serial", HandlDevice)                                          // GETting the schedules for a device
+	devices.POST("", devregPayload, checkIfDeviceReg(false), HandlDevices)                       // to register new devices
+	devices.DELETE("/:serial", checkIfDeviceReg(true), HandlDevice)                              // single device un-register
+	devices.PATCH("/:serial", checkIfDeviceReg(true), devregPayload, mqttConnect(), HandlDevice) // schedules are updated here
+	devices.GET("/:serial", checkIfDeviceReg(true), HandlDevice)                                 // GETting the schedules for a device
+
+	// a group to facilitate commands to the device from the app
+	// A command can only be only posted, the nature of the action in
+	cmds := r.Group("/cmds")
+	cmds.POST("/:serial", mqttConnect(), HndlCommands)
 
 	log.Info("Starting luminapi service ..")
 	defer log.Warn("Now quitting luminapi service")

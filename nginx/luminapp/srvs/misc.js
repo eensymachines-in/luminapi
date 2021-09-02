@@ -6,6 +6,31 @@
         hence from the client code
         srvRefactor($scope).whatever_function() */ 
         return function(scope){
+            // get_object_from_api : generic object downloading function for api calls
+            // agnostic of the object shape this can hit the api download the 
+            this.get_object_from_api = function(service_call,err_modal_ackw,var_name){
+                scope.wait =true;
+                service_call().then(function(data){
+                    // generic service api call 
+                    // will be set to a specific api call from the controller
+                    scope.wait =false;
+                    console.log("get_object_from_api: data downloaded")
+                    console.log(data) // expected object data , hence log instead of table
+                    console.log("Now assigning a variable on the scope")
+                    scope[var_name] = data;
+                     // assigns the data to the contextual scope that the controller needs 
+                    console.log(scope[var_name])
+                }, function(error){
+                    console.error("get_object_from_api: failed to download data from api")
+                    scope.wait =false;
+                    error.upon_exit  = function(){
+                        scope.$apply(function(){
+                            err_modal_ackw()
+                        })
+                    }
+                    $rootScope.err = error;
+                })
+            }
             // this makes the submit function for the buttons to call on
             // this assumes you have a list on top and items marked for change can be sent to srvApi on call
             this.submit_list_changes = function(listVarName,filter,service_call,errModal_ackw){
@@ -22,6 +47,7 @@
                         scope.wait = false;
                         $route.reload();
                     }, function(error){
+                        console.error("submit_list_changes: error")
                         scope.wait = false;
                         error.upon_exit  = function(){
                             scope.$apply(function(){

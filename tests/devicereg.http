@@ -1,28 +1,47 @@
 
-POST http://auth.eensymachines.in/devices HTTP/1.1
-Content-Type: application/json
-
-{
-    "user":"kneerunjun@gmail.com",
-    "hw":"BCM2835",
-    "serial":"000000007920365c",
-    "model":"Raspberry Pi 3 Model B Rev 1.2"
-}
-
 #### 
 # since the device also needs to be registered 
 POST http://localhost/api/v1/devices HTTP/1.1
 Content-Type: application/json
 
 {
-    "serial":"000000007920365c",
-    "rlys":["IN1","IN2","IN3","IN4"]
+    "serial":"000000007920365z",
+    "rmaps":[
+        {"rid":"IN1", "defn":"First floor, corridor, basement"},
+        {"rid":"IN2", "defn":"Floor 4, 9, 6, 5"},
+        {"rid":"IN3", "defn":"Floor 10, 3, 7, 1"},
+        {"rid":"IN4", "defn":"Floor 12, 8, 10, 2"}
+    ]
 }
 
 ###
 # Getting the device registration details just submitted 
 GET  http://localhost/api/v1/devices/000000007920365c HTTP/1.1
 
+### 
+# Here we try and patch the schedules of a device
+PATCH  http://localhost/api/v1/devices/000000007920365b HTTP/1.1
+Content-Type: application/json
+
+{
+    "serial":"000000007920365b",
+     "scheds" : [
+        {"on":"06:00 PM", "off": "08:33 AM", "primary":true, "ids":["IN1","IN2","IN3","IN4"]},
+        {"off":"06:00 PM", "on": "06:35 PM", "primary":false, "ids":["IN1"]},
+        {"off":"06:01 PM", "on": "08:35 PM", "primary":false, "ids":["IN4"]},
+        {"off":"08:35 AM", "on": "04:30 AM", "primary":false, "ids":["IN2"]},
+        {"off":"08:30 AM", "on": "04:30 AM", "primary":false, "ids":["IN3"]}
+        
+    ]
+}
+
+# {
+#     "serial":"000000007920365c",
+#     "scheds" : [
+#         {"on":"06:00 PM", "off": "08:33 PM", "primary":true, "ids":["IN1","IN2","IN3","IN4"]},
+#         {"on":"06:01 PM", "off": "07:40 PM", "primary":false, "ids":["IN1","IN3"]}
+#     ]
+# }
 ###
 # Expect 200 OK and the device registration deleted 
 DELETE  http://localhost/api/v1/devices/000000007920365c HTTP/1.1
@@ -44,7 +63,7 @@ Content-Type: application/json
 
 {
     "serial":"000000007920365c",
-    "logdata":[{"level":"info","msg":"Verbose logging","time":"2021-05-16T09:07:57+05:30"}, 
+    "logs":[{"level":"info","msg":"Verbose logging","time":"2021-05-16T09:07:57+05:30"}, 
     {"flog":true,"level":"info","msg":"Starting autolumin module","time":"2021-05-16T09:07:57+05:30","verbose":true}, 
     {"level":"info","msg":"Relayboard server: initializing...","time":"2021-05-16T09:07:57+05:30"}, 
     {"level":"info","msg":"Starting SrvRelay..","status":{"IN1":0,"IN2":0,"IN3":0,"IN4":0},"time":"2021-05-16T09:07:57+05:30"}, 
@@ -83,3 +102,8 @@ GET http://localhost/api/v1/logs/000000007920365c?q=warning HTTP/1.1
 
 ###
 GET http://localhost/api/v1/logs/000000007920365c?q=info HTTP/1.1
+
+###
+
+POST http://localhost/api/v1/cmds/000000007920365b?action=shutdown HTTP/1.1
+Content-Type: application/json

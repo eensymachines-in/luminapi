@@ -11,12 +11,13 @@
           <th scope="col">Model</th>
           <th scope="col">Lock</th>
           <th ng-if="editable==true" scope="col">Blacked</th>
+          <th>Action</th>
         </tr>
       </thead>
       <tbody>
         <tr class="table-active" ng-repeat="ud in devices">
           <!-- clicking on this shall take you to the schedules -->
-          <td><a href="#!/{[ud.serial]}/schedules">{[ud.serial|serialFlt]}</a></td>
+          <td><a href="#!/{[ud.serial]}/details">{[ud.serial|serialFlt]}</a></td>
           <td >{[ud.hw]}</td>
           <td>{[ud.model|nameFlt:12]}</td>
           <td ng-click="ud.toggle_lock()" class="clickable">
@@ -26,8 +27,16 @@
           <td ng-if="editable==true" ng-click="ud.toggle_black()" class="clickable">
             <h4>
               <strong><i ng-class="{true:'bi bi-suit-club-fill text-danger', false:'bi bi-suit-club text-success'}[ud.black==true]" class="bi"
-                ></i></strong></td>
+                ></i></strong>
             </h4>
+          </td>
+          <td class="clickable" ng-click="ud.shutdown()">
+            <!-- this is to call the shutdown of the device, should it be allowed for the admin? 
+            we need to take a call on that -->
+            <h4>
+              <strong><i class="bi bi-power text-danger"></i></strong>
+            </h4>
+          </td>
         </tr>
       </tbody>
     </table>

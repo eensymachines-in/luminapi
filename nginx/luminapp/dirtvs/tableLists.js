@@ -77,7 +77,16 @@
                                 el.black =!el.black;
                                 // if its black listed only then its marked as modified
                                 el.modified = el.black;
-                            }
+                            } 
+                        }
+                        // If the table is editable or not the shutdown function is available
+                        el.shutdown = function(){
+                            srvApi.shutdown_device(el.serial).then(function(data){
+                                console.log("Successfully shutdown device");
+                                $route.reload();
+                            }, function(error){
+                                console.error("Failed to shutdown device :"+ error)
+                            })
                         }
                     },function(){
                         console.error("Failed to download the list of accounts")
@@ -89,7 +98,7 @@
                             if (el.modified==true){
                                 if (el.black ==true) {
                                     // if its blacklisted then its st fwd
-                                    return srvApi.blacklist_device(el.serial,true)
+                                    return srvApi.blacklist_device(el.serial,true);
                                 } else {
                                     // If the device is modified and not blacklisted then the lock status has been changed
                                     return srvApi.lock_device(el.serial,el.lock)
