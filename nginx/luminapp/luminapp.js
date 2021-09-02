@@ -71,9 +71,10 @@
                 return {
                     auth : "http://auth.eensymachines.in",
                     // TODO: before moving to production change this uri
-                    // lumin: "http://lumin.eensymachines.in/api/v1/devices"
-                    lumin: "http://192.168.0.40/api/v1/devices",
-                    cmds: "http://192.168.0.40/api/v1/cmds"
+                    lumin: "http://lumin.eensymachines.in/api/v1/devices",
+                    lumin: "http://lumin.eensymachines.in/api/v1/cmds"
+                    // lumin: "http://192.168.0.40/api/v1/devices",
+                    // cmds: "http://192.168.0.40/api/v1/cmds"
                 }
             }
         });
