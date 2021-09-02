@@ -6,7 +6,9 @@ services:
     ports:
       - "80:80"
     volumes: 
-      - "/home/niranjan/repos/eensymachines.in/luminapi/nginx/luminapp:/var/www/luminapp"
+      # for local development the volume mapping changes
+      # - "/home/niranjan/repos/eensymachines.in/luminapi/nginx/luminapp:/var/www/luminapp"
+      - "/root/repos/eensymachines.in/luminapi/nginx/luminapp:/var/www/luminapp"
     depends_on:
       - "luminapi"
   mosquitto:
