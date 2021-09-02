@@ -17,7 +17,8 @@
       <tbody>
         <tr class="table-active" ng-repeat="ud in devices">
           <!-- clicking on this shall take you to the schedules -->
-          <td><a href="#!/{[ud.serial]}/details">{[ud.serial|serialFlt]}</a></td>
+          <td ng-if="editable==false"><a href="#!/{[ud.serial]}/details">{[ud.serial|serialFlt]}</a></td>
+          <td ng-if="editable==true">{[ud.serial|serialFlt]}</td>
           <td >{[ud.hw]}</td>
           <td>{[ud.model|nameFlt:12]}</td>
           <td ng-click="ud.toggle_lock()" class="clickable">
