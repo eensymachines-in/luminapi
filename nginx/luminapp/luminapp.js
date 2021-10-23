@@ -81,7 +81,6 @@
         // TODO: when moving to dev comment this.
         // console.log = function(){};     
         // console.table = function(){}; 
-
     }).filter("nameFlt", function(){
         return function(name, limit){
             if (name.length> limit){
