@@ -1,9 +1,12 @@
 (function(){
-    angular.module("luminapp", ["ngRoute"]).config(function($routeProvider,$interpolateProvider,$provide){
+    angular.module("luminapp", ["ngRoute"]).config(function($locationProvider,$routeProvider,$interpolateProvider,$provide){
         // with GO Lang frameworks this can help to have angular a distinct space 
         $interpolateProvider.startSymbol("{[")
         $interpolateProvider.endSymbol("]}")
-       
+        $locationProvider.html5Mode({
+            enabled: true,
+            requireBase: true
+        });
         $routeProvider
         .when("/", {
             templateUrl:"/views/splash.html"

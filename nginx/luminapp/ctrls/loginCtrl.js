@@ -1,6 +1,9 @@
 (function(){
     angular.module("luminapp").controller("loginCtrl", function($scope, $rootScope,$route,$location,srvApi,lclStorage,$timeout){
         $scope.wait = false;
+        console.log("now logging in the base url: "+$location.host());
+        console.log("protocol: "+$location.protocol());
+        console.log("abs url: "+$location.absUrl());
         srvApi.log_out().then(function(){
             lclStorage.clear_auth()
         }, function(error){
@@ -8,7 +11,7 @@
             console.error("There was problem logging out the user: "+error)
         })
         $scope.submit = function(){
-            $scope.$broadcast("validate",{})
+            $scope.$broadcast("validate",{});
             $timeout(function(){
                 $scope.$apply(function(){
                     // by this time the broadcasted validate command would have been complete 

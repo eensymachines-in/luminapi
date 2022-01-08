@@ -76,6 +76,7 @@
                 // filters all the labels that have been selected 
                 // if length of labels selected ==0 then schedule has zero node selected
                 // this will help in identifying this schedule before submit
+                // Nodes - IN1, IN2, IN3 , IN3 essentially means nodes on the relay
                 return result.lbls.filter(x=>x.sel==true).length ==0 ? true: false
             }
             return result

@@ -5,7 +5,17 @@
     // From the controllers above one can push in the time as string ex: '10:30 AM'
     // this here is split to individual components of hr:min AM/PM selectors
     // once the user has selected and made changes this will put this back to the required string format
-    angular.module("luminapp").directive("timeSelect", function($timeout){
+    angular.module("luminapp")
+    .directive("timePicker", function(){
+        return {
+            restrict:"E",
+            replace:false,
+            scope:{
+                tm:"<"
+            }
+        }
+    })
+    .directive("timeSelect", function($timeout){
         return {
             restrict:"E",
             replace:false,
