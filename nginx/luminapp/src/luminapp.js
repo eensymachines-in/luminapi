@@ -11,26 +11,26 @@
         .when("/", {
             templateUrl:"/views/splash.html"
         })
-        .when("/:email/account", {
+        .when("/accounts/:email", {
             templateUrl:"/views/account.html",
         })
-        .when("/:email/devices", {
+        .when("/accounts/:email/devices", {
             templateUrl:"/views/user-devices.html",
         })
         // Schedules of devices
         // .when("/:serial/schedules", {
         //     templateUrl:"/views/device-schedules.html",
         // })
-        .when("/:serial/details", {
+        .when("/schedules/:serial", {
             templateUrl:"/views/device-details.html",
         })
         .when("/signup", {
-            templateUrl:"/views/signup.html",
+            templateUrl:"/views/newuser.html",
         })
         .when("/about", {
-            templateUrl:"/views/about.html",
+            templateUrl:"/views/eensy.html",
         })
-        .when("/admin/:email/devices", {
+        .when("/admin/devices/:email", {
             templateUrl:"/views/admin-devices.html",
         })
         .when("/admin/accounts", {

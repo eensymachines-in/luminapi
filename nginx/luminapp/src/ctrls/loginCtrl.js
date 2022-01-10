@@ -21,7 +21,7 @@
                             $scope.err = null;
                             $scope.wait = false;
                             // Ahead of feedback from the user, it makes more sense to show devices rather than account details
-                            $location.url("/"+$scope.details.email+"/devices")
+                            $location.url("/accounts/"+$scope.details.email+"/devices")
                         }, function(error){
                             error.upon_exit = function(){
                                 $scope.$apply(function(){

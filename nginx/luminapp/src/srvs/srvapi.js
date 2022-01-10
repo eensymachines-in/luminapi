@@ -1,7 +1,12 @@
 
 (function(){
-    angular.module("luminapp").service("srvApi",function($timeout, $q, baseURL, $http, $window,lclStorage){
+    angular.module("luminapp").service("srvApi",function($timeout, $q, baseURL, $http, $window,lclStorage, $location){
         /*Use this $http.then error handler so that we can break down the error response (specific to the server into error response that is used by the web app)*/ 
+        var baseURL  = {
+            auth: "http://auth.eensymachines.in",
+            lumin:$location.absUrl()+"api/v1/devices",
+            cmds:$location.absUrl()+"api/v1/cmds"
+        }
         var err_message = function(response){
             // err_message : breaks down the error response as required for modals / warning
             var m = "Server unreachable, or responded invalid. Kindly wait for admins to fix this";

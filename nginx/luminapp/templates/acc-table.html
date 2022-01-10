@@ -17,7 +17,7 @@
           <td ng-if="locHide==false">{[a.loc|locFlt]}</td>
           <td><h5><i class="bi role" ng-class="{0:'bi-person',1:'bi-person-plus',2:'bi-person-square'}[a.role]">
           </i></h5></td>
-          <td><h6><a href="#!/admin/{[a.email]}/devices" style="cursor: pointer;">Devices</a></h6></td>
+          <td><h6><a href="/admin/devices/{[a.email]}" style="cursor: pointer;">Devices</a></h6></td>
           <td><h5><i ng-click="a.mark_for_delete()" ng-if="a.role<2" class="bi bi-trash" style="cursor: pointer;"></i></h5></td>
         </tr>
       </tbody>
