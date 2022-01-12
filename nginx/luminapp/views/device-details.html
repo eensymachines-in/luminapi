@@ -18,7 +18,7 @@
                     Schedule for:
                 </legend>
                 <span ng-repeat="rm in selectedSched.lbls"
-                    ng-class="{true:'bg-primary', false:'bg-secondary'}[rm.sel==true]" class="badge rounded-pill"
+                    ng-class="{true:'bg-success', false:'bg-light'}[rm.sel==true]" class="badge rounded-pill"
                     ng-click="rm.togg()" style="cursor: pointer;">{[rm.txt]}&nbsp;</span>
                 <br> <br>
                 <p class="text-muted">{[selectedSched.desc]}</p>
