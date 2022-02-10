@@ -1,0 +1,16 @@
+<div class="row time-pick mb-4">
+    <div class="container">
+        <h5 class="text-primary">{[title]}</h5>
+        <hr>
+        <p class="text-justify text-md-left text-secondary">{[desc]}</p>
+    </div>
+    <div class="col-4 col-md-5">
+        <select ng-options="opt for opt in hrOptions" ng-model="tm.hr" class="tmpart-select" id="hrSelect"></select>
+    </div>
+    <div class="col-4 col-md-5">
+        <select ng-options="opt for opt in mnOptions" ng-model="tm.mn" class="tmpart-select" id="mnSelect"></select>
+    </div>
+    <div class="col-4 col-md-2">
+        <select ng-options="opt for opt in mrOptions" ng-model="tm.mr" class="tmpart-select" id="mrSelect"></select>
+    </div>
+</div>

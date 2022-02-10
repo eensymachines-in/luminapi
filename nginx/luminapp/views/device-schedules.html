@@ -1,0 +1,19 @@
+<div class="container">
+    <!-- TODO: put authorization level here on this -->
+    <div class="col-12 col-lg-6 offset-lg-3 my-4">
+        <div class="card" get-device-scheds>
+            <div class="card-body" device-details>
+                <div class="container">
+                    <h4 class="card-title">Schedules</h4>
+                    <h6 class="card-subtitle mb-2 text-muted">Pick a schedule & change the clock settings</h6>
+                    <hr>
+                </div>
+                <list-of-schedules list="dd.scheds" rmaps="dd.rmaps"></list-of-schedules>
+                <div class="container">
+                    <button ng-click="dd.submit()" type="button" class="btn btn-primary btn-block d-md-none">Submit</button>
+                    <button ng-click="dd.submit()" type="button" class="btn btn-primary d-none d-md-block">Submit</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
