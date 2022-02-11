@@ -119,6 +119,8 @@ This lets edit all the schedules on a device, add more exceptions, edit primary 
                                     ids: this.ids.filter(x => x.sel == true).map(x => x.id)
                                 }
                             } else {
+                                let idxInvalSched = $scope.list.findIndex(x => x.title == sch.title);
+                                $scope.selcSchedule = $scope.list[idxInvalSched]
                                 throw sch; //we throw back the schedule itself that has the error on it 
                             }
                         }
