@@ -1,5 +1,7 @@
 :root {
     --sandstone: rgb(157, 150, 142);
+    --colordanger: #d9534f;
+    --colorwarning: #f47c3c;
 }
 
 .deleted {
@@ -62,7 +64,8 @@ select.form-select {
 
 .has-error {
     background: white;
-    border: 2px #d9534f solid;
+    border: 2px var(--colorwarning) solid;
+    border-radius: 4px;
 }
 
 
