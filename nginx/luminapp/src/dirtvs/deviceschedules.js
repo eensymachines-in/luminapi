@@ -143,19 +143,10 @@ This lets edit all the schedules on a device, add more exceptions, edit primary 
                 }
                 $scope.del_schedule = function(schedTitle) {
                     /*using the title of the schedule this can remove a specific schedule from the list*/
-                    var indexToDel = -1;
-                    $scope.list.forEach(function(el, index) {
-                        if (el.title == schedTitle) {
-                            indexToDel = index;
-                        }
-                    });
-                    if (indexToDel >= 0) {
-                        $scope.list.splice(indexToDel, 1);
-                        $scope.selcSchedule = indexToDel < ($scope.list.length - 1) ? $scope.list[indexToDel] : $scope.list[$scope.list.length - 1];
-                        return
-                    } else {
-                        console.warn("Index to delete is invalid, not deleting any schedule");
-                    }
+                    let indexToDel = $scope.list.findIndex(x => x.title == schedTitle);
+                    $scope.list.splice(indexToDel, 1);
+                    $scope.selcSchedule = indexToDel < ($scope.list.length - 1) ? $scope.list[indexToDel] : $scope.list[$scope.list.length - 1];
+                    return
                 }
                 $scope.add_schedule = function() {
                     /*adds a new schedule to the list of schedules 
