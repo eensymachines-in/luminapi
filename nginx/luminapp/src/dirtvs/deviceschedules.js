@@ -9,7 +9,7 @@ This lets edit all the schedules on a device, add more exceptions, edit primary 
         return {
             restrict: "A",
             scope: false,
-            controller: function($scope, srvRefactor, $routeParams, srvApi) {
+            controller: function($scope, srvRefactor, $routeParams, srvApi, $route, $rootScope) {
                 $scope.$watch("dd", function(after, before) {
                         if (after !== null && after !== undefined) {
                             /*submit allows the device details to be submitted to the api after the changes
@@ -29,9 +29,31 @@ This lets edit all the schedules on a device, add more exceptions, edit primary 
                                         }
                                     })
                                     var payload = {
-                                        serial: after.serial,
-                                        scheds: sched_payload
-                                    }
+                                            serial: after.serial,
+                                            scheds: sched_payload
+                                        }
+                                        // and here is where we send the payload 
+                                    srvApi.patch_device_schedules(after.serial, payload).then(function(data) {
+                                        $rootScope.err = null;
+                                        console.log("Success! schedules have been saved");
+                                        console.log(data);
+                                        $route.reload();
+                                    }, function(error) {
+                                        console.error("Error posting schedule changes to api");
+                                        console.error(error)
+                                        if (error.conflicts) {
+                                            error.upon_exit = function() {};
+                                            $scope.$broadcast('schedule-conflicts', error.conflicts);
+                                        } else {
+                                            error.upon_exit = function() {
+                                                $scope.$apply(function() {
+                                                    $route.reload();
+                                                })
+                                            }
+                                        }
+
+                                        $rootScope.err = error;
+                                    })
                                     console.log("Now ready to submit device details..");
                                     console.log(payload);
                                 } catch (e) {
@@ -57,7 +79,7 @@ This lets edit all the schedules on a device, add more exceptions, edit primary 
             restrict: "E",
             scope: {
                 list: "=",
-                rmaps: "<"
+                rmaps: "<",
             },
             templateUrl: "/templates/list-schedules.html",
             controller: function($scope, ) {
@@ -91,6 +113,7 @@ This lets edit all the schedules on a device, add more exceptions, edit primary 
                     sch.title = (sch.primary == true ? "Primary: " : "Exception: ") + index.toString();
                     sch.onTm = strTm_to_tmpick(sch.on);
                     sch.offTm = strTm_to_tmpick(sch.off);
+                    sch.conflicts = false; // this is to denote conflicts if any 
                     /*Schedule ids:[] is just ids of the relays that the schedule applies to 
                     here we include the definition of each of the ids from rmaps
                     sel     : flag to denote if the relay id is selected, for new schedule this is selected*/
@@ -116,7 +139,8 @@ This lets edit all the schedules on a device, add more exceptions, edit primary 
                                 return {
                                     on: this.onTm.format_time(),
                                     off: this.offTm.format_time(),
-                                    ids: this.ids.filter(x => x.sel == true).map(x => x.id)
+                                    ids: this.ids.filter(x => x.sel == true).map(x => x.id),
+                                    primary: sch.primary
                                 }
                             } else {
                                 let idxInvalSched = $scope.list.findIndex(x => x.title == sch.title);
@@ -141,6 +165,22 @@ This lets edit all the schedules on a device, add more exceptions, edit primary 
                     }(sch);
                     return sch
                 }
+                $scope.$on('schedule-conflicts', function(sender, conflicting) {
+                    // run this when we get a list of conflicting schedules
+                    console.log(conflicting);
+                    console.log($scope.list);
+                    conflicting.forEach(function(el) {
+                        $scope.list.forEach(function(le) {
+                            if (le.onTm.format_time() == el.on && le.offTm.format_time() == el.off) {
+                                // searching with on and off times matching
+                                le.conflicts = true;
+                            }
+                        })
+                    });
+                    // if the schedules have conflicts we help the user by making that the current selected schedule 
+                    let havingConflicts = $scope.list.filter(x => x.conflicts == true);
+                    if (havingConflicts.length > 0) { $scope.selcSchedule = havingConflicts[0] }
+                });
                 $scope.del_schedule = function(schedTitle) {
                     /*using the title of the schedule this can remove a specific schedule from the list*/
                     let indexToDel = $scope.list.findIndex(x => x.title == schedTitle);
@@ -159,6 +199,7 @@ This lets edit all the schedules on a device, add more exceptions, edit primary 
                     }, $scope.list.length, true));
                     $scope.selcSchedule = $scope.list[$scope.list.length - 1];
                 }
+
                 $scope.$watch("list", function(after, before) {
                     // Once after the list is populated each of the schedule object gets a facelift 
                     // from the view model perspective schedules are modeled different from how they are received from the api

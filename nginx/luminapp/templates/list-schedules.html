@@ -16,11 +16,16 @@
         </div>
         <small ng-if="selcSchedule.err" class="text-warning text-center d-block">{[selcSchedule.err.txt]}</small>
     </div>
-    <div class="">
-        <time-pick tm="selcSchedule.onTm" desc="Switches turn ON at this time. Remain ON till the next OFF time" title="ON time">
-        </time-pick>
-        <time-pick tm="selcSchedule.offTm" desc="Switches turn OFF at this time. Remain ON till the next ON time" title="OFF time">
-        </time-pick>
+    <div style="padding:4% ;" class="mt-3 mb-3" ng-class="{true:'has-error'}[selcSchedule.conflicts==true]">
+        <div class="">
+            <time-pick tm="selcSchedule.onTm" desc="Switches turn ON at this time. Remain ON till the next OFF time" title="ON time">
+            </time-pick>
+            <time-pick tm="selcSchedule.offTm" desc="Switches turn OFF at this time. Remain ON till the next ON time" title="OFF time">
+            </time-pick>
+        </div>
+        <small ng-if="selcSchedule.conflicts==true" class="text-warning text-center d-block">
+            Conflicting schedules can be resolved by changing overlapping on/off times
+        </small>
     </div>
     <!-- <pre>{[jsonData]}</pre> -->
 </div>
