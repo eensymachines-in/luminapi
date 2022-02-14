@@ -11,61 +11,61 @@ This lets edit all the schedules on a device, add more exceptions, edit primary 
             scope: false,
             controller: function($scope, srvRefactor, $routeParams, srvApi, $route, $rootScope) {
                 $scope.$watch("dd", function(after, before) {
-                        if (after !== null && after !== undefined) {
-                            /*submit allows the device details to be submitted to the api after the changes
-                            all the schedules are mapped to objects that are compatible with the api
-                            incase of an error aborts the submission and denotes which schedule has an error*/
-                            after.submit = function() {
-                                /*tries to map the scheds to data shape that is api compatible 
-                                and aborts on error*/
-                                try {
-                                    // trying to map the schedules as payload
-                                    sched_payload = after.scheds.map(function(s) {
-                                        try {
-                                            return s.submit_data();
-                                        } catch (sched) {
-                                            // submit_data can throw error that is schedule which has it
-                                            throw sched
+                    if (after !== null && after !== undefined) {
+                        /*submit allows the device details to be submitted to the api after the changes
+                        all the schedules are mapped to objects that are compatible with the api
+                        incase of an error aborts the submission and denotes which schedule has an error*/
+                        after.submit = function() {
+                            /*tries to map the scheds to data shape that is api compatible 
+                            and aborts on error*/
+                            try {
+                                // trying to map the schedules as payload
+                                sched_payload = after.scheds.map(function(s) {
+                                    try {
+                                        return s.submit_data();
+                                    } catch (sched) {
+                                        // submit_data can throw error that is schedule which has it
+                                        throw sched
+                                    }
+                                });
+                                var payload = {
+                                        serial: after.serial,
+                                        scheds: sched_payload
+                                    }
+                                    // and here is where we send the payload 
+                                srvApi.patch_device_schedules(after.serial, payload).then(function(data) {
+                                    $rootScope.err = null;
+                                    console.log("Success! schedules have been saved");
+                                    console.log(data);
+                                    $route.reload();
+                                }, function(error) {
+                                    console.error("Error posting schedule changes to api");
+                                    console.error(error)
+                                    if (error.conflicts) {
+                                        error.upon_exit = function() {};
+                                        $scope.$broadcast('schedule-conflicts', error.conflicts);
+                                    } else {
+                                        error.upon_exit = function() {
+                                            $scope.$apply(function() {
+                                                $route.reload();
+                                            })
                                         }
-                                    })
-                                    var payload = {
-                                            serial: after.serial,
-                                            scheds: sched_payload
-                                        }
-                                        // and here is where we send the payload 
-                                    srvApi.patch_device_schedules(after.serial, payload).then(function(data) {
-                                        $rootScope.err = null;
-                                        console.log("Success! schedules have been saved");
-                                        console.log(data);
-                                        $route.reload();
-                                    }, function(error) {
-                                        console.error("Error posting schedule changes to api");
-                                        console.error(error)
-                                        if (error.conflicts) {
-                                            error.upon_exit = function() {};
-                                            $scope.$broadcast('schedule-conflicts', error.conflicts);
-                                        } else {
-                                            error.upon_exit = function() {
-                                                $scope.$apply(function() {
-                                                    $route.reload();
-                                                })
-                                            }
-                                        }
+                                    }
 
-                                        $rootScope.err = error;
-                                    })
-                                    console.log("Now ready to submit device details..");
-                                    console.log(payload);
-                                } catch (e) {
-                                    // any one schedule that has error will be caught here
-                                    console.error("Error in schedule : " + e.title);
-                                    console.error(e.err.txt);
-                                }
-
+                                    $rootScope.err = error;
+                                })
+                                console.log("Now ready to submit device details..");
+                                console.log(payload);
+                            } catch (e) {
+                                // any one schedule that has error will be caught here
+                                console.error("Error in schedule : " + e.title);
+                                console.error(e.err.txt);
                             }
+
                         }
-                    })
-                    // getting the device details from the device serial
+                    }
+                });
+                // getting the device details from the device serial
                 srvRefactor($scope).get_object_from_api(function() {
                     return srvApi.get_device_schedules($routeParams.serial)
                 }, function() {
@@ -205,6 +205,7 @@ This lets edit all the schedules on a device, add more exceptions, edit primary 
                     // from the view model perspective schedules are modeled different from how they are received from the api
                     if (after !== null && after !== undefined) {
                         after.forEach(function(sch, index) {
+                            // Extends the schedule object for viewmodel compatibility 
                             schedule(sch, index, false);
                         });
                         if (after.length > 0) {
