@@ -1,12 +1,11 @@
 <div class="container" authorized-only lvl=0>
     <div class="row my-5" ng-controller="schedCtrl">
-       <div class="col-lg-6 offset-lg-3">
-           <!-- drop down used to control the selected schedule -->
+        <div class="col-lg-6 offset-lg-3">
+            <!-- drop down used to control the selected schedule -->
             <div class="form-group">
                 <div class="input-group">
-                    <select class="custom-select form-select" ng-model="selectedSched" 
-                        ng-options="sch.name for sch in optsSchedules"
-                    ></select>
+                    <select class="custom-select form-select" ng-model="selectedSched"
+                        ng-options="sch.name for sch in optsSchedules"></select>
                     <div class="input-group-append">
                         <button ng-click="new_schedule()" type="button" class="btn btn-outline-info">New</button>
                     </div>
@@ -18,50 +17,46 @@
                 <legend>
                     Schedule for:
                 </legend>
-                <span ng-repeat="rm in selectedSched.lbls" 
-                ng-class="{true:'bg-primary', false:'bg-secondary'}[rm.sel==true]"
-                class="badge rounded-pill"
-                ng-click="rm.togg()"
-                style="cursor: pointer;"
-                >{[rm.txt]}&nbsp;</span>
+                <span ng-repeat="rm in selectedSched.lbls"
+                    ng-class="{true:'bg-success', false:'bg-light'}[rm.sel==true]" class="badge rounded-pill"
+                    ng-click="rm.togg()" style="cursor: pointer;">{[rm.txt]}&nbsp;</span>
                 <br> <br>
                 <p class="text-muted">{[selectedSched.desc]}</p>
                 <hr>
                 <section ng-if="selectedSched.conflicts">
                     <div class="alert alert-dismissible alert-primary">
-                        <strong>Conflicting schedule</strong> <p> This Schedule conflicts with some other. Schedules operating on the same nodes cannot have overlapping times.
+                        <strong>Conflicting schedule</strong>
+                        <p> This Schedule conflicts with some other. Schedules operating on the same nodes cannot have
+                            overlapping times.
                         </p>
                         <p>Offset the time of the schedule by a minute.</p>
                     </div>
                     <hr>
                 </section>
-                <time-select tm="selectedSched.on" title="Turn ON at:" 
-                desc="From this time to the OFF time, the lights will remain ON">
+                <time-select tm="selectedSched.on" title="Turn ON at:"
+                    desc="From this time to the OFF time, the lights will remain ON">
                 </time-select>
-                <time-select tm="selectedSched.off" title="Turn OFF at:" 
-                desc="From this time to the ON time, the lights will remain OFF">
+                <time-select tm="selectedSched.off" title="Turn OFF at:"
+                    desc="From this time to the ON time, the lights will remain OFF">
                 </time-select>
                 <hr>
 
                 <div class="form-group">
                     <legend>Save Changes</legend>
                     <em class="text-warning">Will also sync the device instantly</em></p>
-                    <submit-confirm 
-                            submit="submit()" 
-                            btn-lbl="<i class='far fa-paper-plane'></i>&nbsp;Save">
+                    <submit-confirm submit="submit()" btn-lbl="<i class='far fa-paper-plane'></i>&nbsp;Save">
                     </submit-confirm>
                 </div>
-                <hr  ng-if="selectedSched.primary==false">
+                <hr ng-if="selectedSched.primary==false">
                 <div class="form-group" ng-if="selectedSched.primary==false">
                     <!-- this section is for deleting the schedule and would be available only incases of non-primary schedules -->
                     <legend>
                         Delete schedule
                     </legend>
-                    <p class="text-muted"><strong class="text-warning">Warning!</strong> Deleting a schedule is irreversible. Although you can always add a new one just like this one</p>
-                    <button type="button" 
-                        class="btn btn-outline-primary"
-                        ng-click="remove_sched(selectedSched.oid)"
-                    ><i class="fas fa-trash"></i>&nbsp;Delete</button>
+                    <p class="text-muted"><strong class="text-warning">Warning!</strong> Deleting a schedule is
+                        irreversible. Although you can always add a new one just like this one</p>
+                    <button type="button" class="btn btn-outline-primary" ng-click="remove_sched(selectedSched.oid)"><i
+                            class="fas fa-trash"></i>&nbsp;Delete</button>
                 </div>
             </section>
         </div>

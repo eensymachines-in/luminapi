@@ -3,7 +3,9 @@ package main
 import (
 	"bufio"
 	"flag"
+	"fmt"
 	"io"
+	"net/http"
 	"os"
 	"strings"
 	"time"
@@ -19,6 +21,7 @@ const (
 	broker      = "mosquitto"
 	port        = 1883
 	fMqttsecret = "/run/secrets/mqtt_secret"
+	pages       = "/var/www/luminapp/pages" // this has to be loaded into the container from environment
 )
 
 var (
@@ -27,6 +30,13 @@ var (
 	// FVerbose :  determines the level of log
 	FVerbose bool
 )
+
+// sendIndexHtml : handler for all the request to send back the index.html page
+// you can customize this later to have the og:tags modified for SEO and preview links
+func sendIndexHtml(c *gin.Context) {
+	log.Println("We have reached sendIndexHtml")
+	c.HTML(http.StatusOK, "index.html", gin.H{})
+}
 
 // Setting the environment variables here and prepare before the api server runs
 func init() {
@@ -79,7 +89,11 @@ func main() {
 	}
 	gin.SetMode(gin.DebugMode)
 	r := gin.Default()
-	r.Use(CORS)
+
+	// server needs access to the index.html and other error pages
+	// cause on all the routes the main page is to be sent from the server
+	// SEO and image og meta tags will be modified from the server side
+	r.LoadHTMLGlob(fmt.Sprintf("%s/*", pages))
 	r.GET("/ping", func(c *gin.Context) {
 		c.JSON(200, gin.H{
 			"app":     "luminapi",
@@ -87,6 +101,24 @@ func main() {
 			"verblog": FVerbose,
 		})
 	})
+	r.GET("/", sendIndexHtml)
+	r.GET("/signup", sendIndexHtml)
+	r.GET("/about", sendIndexHtml)
+	r.GET("/admin/accounts", func(c *gin.Context) {
+		log.Println("Inside accounts list administration..")
+		c.HTML(http.StatusOK, "index.html", gin.H{})
+	})
+	r.GET("/admin/embargo", sendIndexHtml)
+	r.GET("/admin/devices", sendIndexHtml)
+	r.GET("/accounts/:email", func(c *gin.Context) {
+		log.Printf("Email param: %s", c.Param("email"))
+		c.HTML(http.StatusOK, "index.html", gin.H{})
+	})
+	r.GET("/accounts/:email/devices", sendIndexHtml)
+	r.GET("/schedules/:serial", sendIndexHtml)
+
+	r.Use(CORS)
+	// r.GET("/:email/devices", sendIndexHtml)
 	/*Admin related tasks here under one group. Check the nginx conf this has been appropriately */
 	grpAdmin := r.Group("/admin")
 	grpAdmin.GET("/logs", HndlLogs(os.Getenv("LOGF")))

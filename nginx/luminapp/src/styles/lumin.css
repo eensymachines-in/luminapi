@@ -1,0 +1,99 @@
+:root {
+    --sandstone: rgb(157, 150, 142);
+    --colordanger: #d9534f;
+    --colorwarning: #f47c3c;
+}
+
+.deleted {
+    text-decoration: line-through;
+}
+
+.clickable {
+    cursor: pointer;
+}
+
+.thick-border {
+    border-width: 3px;
+}
+
+hr {
+    /* margin-top: 1rem; */
+    /* margin-bottom: 1rem; */
+    border: 0;
+    border-top: 1px solid rgba(0, 0, 0, 0.2);
+}
+
+select.form-select {
+    border-radius: 6px;
+}
+
+.hr-display {
+    width: 100%;
+    border-radius: 2px;
+    border: 2px var(--sandstone) solid;
+}
+
+.regular-border {
+    border-radius: 2px;
+    border: 2px var(--sandstone) solid;
+}
+
+.thin-border {
+    border-radius: 2px;
+    border: 1px var(--sandstone) solid;
+    background-color: white;
+}
+
+.tmpart-select {
+    width: 100%;
+    padding-left: 1em;
+    padding-top: 2px;
+    padding-bottom: 2px;
+    border-radius: 3px;
+    min-height: 2em;
+    background-color: white;
+    border: 1px var(--sandstone) solid;
+}
+
+.sandstone-select {
+    min-height: 2em;
+    border-radius: 4px;
+    background-color: white;
+    border: 2px #8E8C84 solid;
+}
+
+.has-error {
+    background: white;
+    border: 2px var(--colorwarning) solid;
+    border-radius: 4px;
+}
+
+
+/* https://getbootstrap.com/docs/5.0/layout/breakpoints/ */
+
+
+/* Extra small devices */
+
+@media only screen and (max-width: 575px) {
+    .wide-enough {
+        width: 55%;
+    }
+}
+
+@media only screen and (min-width: 576px) {
+    .wide-enough {
+        width: 80%;
+    }
+}
+
+@media only screen and (min-width: 768px) {
+    .wide-enough {
+        width: 88%;
+    }
+}
+
+@media only screen and (min-width: 992px) {
+    .wide-enough {
+        width: 82%;
+    }
+}

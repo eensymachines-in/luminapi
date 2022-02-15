@@ -8,7 +8,7 @@ ARG RUN
 ARG ETC 
 ARG BIN
 # making all the specific directories, refer to the env file which has the values 
-RUN mkdir -p ${SRC} && mkdir -p ${LOG} && mkdir -p ${RUN} && mkdir -p ${ETC}
+RUN mkdir -p ${SRC} && mkdir -p ${LOG} && mkdir -p ${RUN} && mkdir -p ${ETC} && mkdir -p /var/www/luminapp/pages
 WORKDIR ${SRC}
 COPY go.sum go.mod ./
 RUN go mod download 
